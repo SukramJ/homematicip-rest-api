@@ -29,10 +29,6 @@ class Rule(HomeMaticIPObject):
         for errorCategory in js["ruleErrorCategories"]:
             pass  # at the moment this was always empty
 
-    def set_label(self, label):
-        """ sets the label of the rule """
-        return self._run_non_async(self.set_label_async, label)
-
     async def set_label_async(self, label):
         """ sets the label of the rule """
         data = {"ruleId": self.id, "label": label}
@@ -45,25 +41,13 @@ class Rule(HomeMaticIPObject):
 class SimpleRule(Rule):
     """ This class represents a "Simple" automation rule """
 
-    def enable(self):
-        """ enables the rule """
-        return self.set_rule_enabled_state(True)
-
     async def enable_async(self):
         """ enables the rule """
-        return await self.set_rule_enabled_state(True)
-
-    def disable(self):
-        """ disables the rule """
-        return self.set_rule_enabled_state(False)
+        return await self.set_rule_enabled_state_async(True)
 
     async def disable_async(self):
         """ disables the rule """
-        return await self.set_rule_enabled_state(False)
-
-    def set_rule_enabled_state(self, enabled):
-        """ enables/disables this rule"""
-        return self._run_non_async(self.set_rule_enabled_state_async, enabled)
+        return await self.set_rule_enabled_state_async(False)
 
     async def set_rule_enabled_state_async(self, enabled):
         """ enables/disables this rule"""
@@ -73,9 +57,6 @@ class SimpleRule(Rule):
     def from_json(self, js):
         super().from_json(js)
         # self.get_simple_rule()
-
-    def get_simple_rule(self):
-        return self._run_non_async(self.get_simple_rule_async)
 
     async def get_simple_rule_async(self):
         data = {"ruleId": self.id}

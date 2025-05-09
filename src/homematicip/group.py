@@ -45,13 +45,13 @@ class Group(HomeMaticIPObject):
     def __str__(self):
         return "{} {}".format(self.groupType, self.label)
 
-    async def set_label_async(self, label):
+    async def set_label(self, label):
         data = {"groupId": self.id, "label": label}
-        return await self._rest_call_async("group/setGroupLabel", data)
+        return await self._rest_call("group/setGroupLabel", data)
 
-    async def delete_async(self):
+    async def delete(self):
         data = {"groupId": self.id}
-        return await self._rest_call_async("group/deleteGroup", body=data)
+        return await self._rest_call("group/deleteGroup", body=data)
 
 
 class MetaGroup(Group):
@@ -143,21 +143,21 @@ class SwitchGroupBase(Group):
         self.set_attr_from_dict("dutyCycle", js)
         self.set_attr_from_dict("lowBat", js)
 
-    async def set_switch_state_async(self, on=True):
+    async def set_switch_state(self, on=True):
         data = {"groupId": self.id, "on": on}
-        return await self._rest_call_async("group/switching/setState", body=data)
+        return await self._rest_call("group/switching/setState", body=data)
 
     def turn_on(self):
         return self.set_switch_state(True)
 
-    async def turn_on_async(self):
-        return await self.set_switch_state_async(True)
+    async def turn_on(self):
+        return await self.set_switch_state(True)
 
     def turn_off(self):
         return self.set_switch_state(False)
 
-    async def turn_off_async(self):
-        return await self.set_switch_state_async(False)
+    async def turn_off(self):
+        return await self.set_switch_state(False)
 
     def __str__(self):
         return f"{super().__str__()} on({self.on}) dimLevel({self.dimLevel}) dutyCycle({self.dutyCycle}) lowBat({self.lowBat})"
@@ -185,11 +185,11 @@ class SwitchingGroup(SwitchGroupBase):
         self.set_attr_from_dict("secondaryShadingLevel", js)
         self.set_attr_from_dict("secondaryShadingStateType", js, ShadingStateType)
 
-    async def set_shutter_level_async(self, level):
+    async def set_shutter_level(self, level):
         data = {"groupId": self.id, "shutterLevel": level}
-        return await self._rest_call_async("group/switching/setShutterLevel", body=data)
+        return await self._rest_call("group/switching/setShutterLevel", body=data)
 
-    async def set_slats_level_async(self, slatsLevel, shutterlevel=None):
+    async def set_slats_level(self, slatsLevel, shutterlevel=None):
         if shutterlevel is None:
             shutterlevel = self.shutterLevel
 
@@ -198,11 +198,11 @@ class SwitchingGroup(SwitchGroupBase):
             "shutterLevel": shutterlevel,
             "slatsLevel": slatsLevel,
         }
-        return await self._rest_call_async("group/switching/setSlatsLevel", body=data)
+        return await self._rest_call("group/switching/setSlatsLevel", body=data)
 
-    async def set_shutter_stop_async(self):
+    async def set_shutter_stop(self):
         data = {"groupId": self.id}
-        return await self._rest_call_async("group/switching/stop", body=data)
+        return await self._rest_call("group/switching/stop", body=data)
 
     def __str__(self):
         return f"{super().__str__()} processing({self.processing}) shutterLevel({self.shutterLevel}) slatsLevel({self.slatsLevel})"
@@ -241,15 +241,15 @@ class ShutterProfile(Group):
         self.set_attr_from_dict("secondaryShadingLevel", js)
         self.set_attr_from_dict("secondaryShadingStateType", js, ShadingStateType)
 
-    async def set_profile_mode_async(self, profileMode: ProfileMode):
+    async def set_profile_mode(self, profileMode: ProfileMode):
         data = {"groupId": self.id, "profileMode": profileMode}
-        return await self._rest_call_async("group/heating/setProfileMode", body=data)
+        return await self._rest_call("group/heating/setProfileMode", body=data)
 
-    async def set_shutter_level_async(self, level):
+    async def set_shutter_level(self, level):
         data = {"groupId": self.id, "shutterLevel": level}
-        return await self._rest_call_async("group/switching/setShutterLevel", body=data)
+        return await self._rest_call("group/switching/setShutterLevel", body=data)
 
-    async def set_slats_level_async(self, slatsLevel, shutterlevel=None):
+    async def set_slats_level(self, slatsLevel, shutterlevel=None):
         if shutterlevel is None:
             shutterlevel = self.shutterLevel
 
@@ -258,11 +258,11 @@ class ShutterProfile(Group):
             "shutterLevel": shutterlevel,
             "slatsLevel": slatsLevel,
         }
-        return await self._rest_call_async("group/switching/setSlatsLevel", body=data)
+        return await self._rest_call("group/switching/setSlatsLevel", body=data)
 
-    async def set_shutter_stop_async(self):
+    async def set_shutter_stop(self):
         data = {"groupId": self.id}
-        return await self._rest_call_async("group/switching/stop", body=data)
+        return await self._rest_call("group/switching/stop", body=data)
 
     def __str__(self):
         return (
@@ -273,13 +273,13 @@ class ShutterProfile(Group):
 
 class LinkedSwitchingGroup(Group):
 
-    async def set_light_group_switches_async(self, devices):
+    async def set_light_group_switches(self, devices):
         switchChannels = []
         for d in devices:
             channel = {"channelIndex": 1, "deviceId": d.id}
             switchChannels.append(channel)
         data = {"groupId": self.id, "switchChannels": switchChannels}
-        return await self._rest_call_async("home/security/setLightGroupSwitches", body=data)
+        return await self._rest_call("home/security/setLightGroupSwitches", body=data)
 
 
 class ExtendedLinkedSwitchingGroup(SwitchGroupBase):
@@ -300,9 +300,9 @@ class ExtendedLinkedSwitchingGroup(SwitchGroupBase):
             super().__str__(), self.onTime, self.onLevel
         )
 
-    async def set_on_time_async(self, onTimeSeconds):
+    async def set_on_time(self, onTimeSeconds):
         data = {"groupId": self.id, "onTime": onTimeSeconds}
-        return await self._rest_call_async("group/switching/linked/setOnTime", body=data)
+        return await self._rest_call("group/switching/linked/setOnTime", body=data)
 
 
 class ExtendedLinkedShutterGroup(Group):
@@ -345,11 +345,11 @@ class ExtendedLinkedShutterGroup(Group):
             super().__str__(), self.shutterLevel, self.slatsLevel
         )
 
-    async def set_shutter_level_async(self, level):
+    async def set_shutter_level(self, level):
         data = {"groupId": self.id, "shutterLevel": level}
-        return await self._rest_call_async("group/switching/setShutterLevel", body=data)
+        return await self._rest_call("group/switching/setShutterLevel", body=data)
 
-    async def set_slats_level_async(self, slatsLevel=0.0, shutterLevel=None):
+    async def set_slats_level(self, slatsLevel=0.0, shutterLevel=None):
         if shutterLevel is None:
             shutterLevel = self.shutterLevel
 
@@ -358,11 +358,11 @@ class ExtendedLinkedShutterGroup(Group):
             "shutterLevel": shutterLevel,
             "slatsLevel": slatsLevel,
         }
-        return await self._rest_call_async("group/switching/setSlatsLevel", body=data)
+        return await self._rest_call("group/switching/setSlatsLevel", body=data)
 
-    async def set_shutter_stop_async(self):
+    async def set_shutter_stop(self):
         data = {"groupId": self.id}
-        return await self._rest_call_async("group/switching/stop", body=data)
+        return await self._rest_call("group/switching/stop", body=data)
 
 
 class ExtendedLinkedGarageDoorGroup(Group):
@@ -419,9 +419,9 @@ class AlarmSwitchingGroup(Group):
         )
         self.acousticFeedbackEnabled = js["acousticFeedbackEnabled"]
 
-    async def set_on_time_async(self, onTimeSeconds):
+    async def set_on_time(self, onTimeSeconds):
         data = {"groupId": self.id, "onTime": onTimeSeconds}
-        return await self._rest_call_async("group/switching/alarm/setOnTime", body=data)
+        return await self._rest_call("group/switching/alarm/setOnTime", body=data)
 
     def __str__(self):
         return "{} on({}) dimLevel({}) onTime({}) signalAcoustic({}) signalOptical({}) smokeDetectorAlarmType({}) acousticFeedbackEnabled({})".format(
@@ -435,27 +435,27 @@ class AlarmSwitchingGroup(Group):
             self.acousticFeedbackEnabled,
         )
 
-    async def test_signal_optical_async(self, signalOptical=OpticalAlarmSignal.BLINKING_ALTERNATELY_REPEATING):
+    async def test_signal_optical(self, signalOptical=OpticalAlarmSignal.BLINKING_ALTERNATELY_REPEATING):
         data = {"groupId": self.id, "signalOptical": str(signalOptical)}
-        return await self._rest_call_async(
+        return await self._rest_call(
             "group/switching/alarm/testSignalOptical", body=data
         )
 
-    async def set_signal_optical_async(self, signalOptical=OpticalAlarmSignal.BLINKING_ALTERNATELY_REPEATING):
+    async def set_signal_optical(self, signalOptical=OpticalAlarmSignal.BLINKING_ALTERNATELY_REPEATING):
         data = {"groupId": self.id, "signalOptical": str(signalOptical)}
-        return await self._rest_call_async(
+        return await self._rest_call(
             "group/switching/alarm/setSignalOptical", body=data
         )
 
-    async def test_signal_acoustic_async(self, signalAcoustic=AcousticAlarmSignal.FREQUENCY_FALLING):
+    async def test_signal_acoustic(self, signalAcoustic=AcousticAlarmSignal.FREQUENCY_FALLING):
         data = {"groupId": self.id, "signalAcoustic": str(signalAcoustic)}
-        return await self._rest_call_async(
+        return await self._rest_call(
             "group/switching/alarm/testSignalAcoustic", body=data
         )
 
-    async def set_signal_acoustic_async(self, signalAcoustic=AcousticAlarmSignal.FREQUENCY_FALLING):
+    async def set_signal_acoustic(self, signalAcoustic=AcousticAlarmSignal.FREQUENCY_FALLING):
         data = {"groupId": self.id, "signalAcoustic": str(signalAcoustic)}
-        return await self._rest_call_async(
+        return await self._rest_call(
             "group/switching/alarm/setSignalAcoustic", body=data
         )
 
@@ -599,13 +599,13 @@ class HeatingCoolingProfile(HomeMaticIPObject):
         self.type = None
         self.profileDays = None
 
-    async def get_details_async(self):
+    async def get_details(self):
         data = {
             "groupId": self.groupId,
             "profileIndex": self.index,
             "profileName": self.name,
         }
-        js = await self._rest_call_async("group/heating/getProfile", body=data)
+        js = await self._rest_call("group/heating/getProfile", body=data)
         self.homeId = js["homeId"]
         self.type = js["type"]
         self.profileDays = {}
@@ -628,7 +628,7 @@ class HeatingCoolingProfile(HomeMaticIPObject):
         s = time.split(":")
         return int(s[0]) * 60 + int(s[1])
 
-    async def update_profile_async(self):
+    async def update_profile(self):
         days = {}
         for i in range(0, 7):
             periods = []
@@ -666,7 +666,7 @@ class HeatingCoolingProfile(HomeMaticIPObject):
             },
             "profileIndex": self.index,
         }
-        return await self._rest_call_async("group/heating/updateProfile", body=data)
+        return await self._rest_call("group/heating/updateProfile", body=data)
 
 
 class HeatingGroup(Group):
@@ -769,27 +769,27 @@ class HeatingGroup(Group):
             self.valvePosition,
         )
 
-    async def set_point_temperature_async(self, temperature):
+    async def set_point_temperature(self, temperature):
         data = {"groupId": self.id, "setPointTemperature": temperature}
-        return await self._rest_call_async(
+        return await self._rest_call(
             "group/heating/setSetPointTemperature", body=data
         )
 
-    async def set_boost_async(self, enable=True):
+    async def set_boost(self, enable=True):
         data = {"groupId": self.id, "boost": enable}
-        return await self._rest_call_async("group/heating/setBoost", body=data)
+        return await self._rest_call("group/heating/setBoost", body=data)
 
-    async def set_boost_duration_async(self, duration: int):
+    async def set_boost_duration(self, duration: int):
         data = {"groupId": self.id, "boostDuration": duration}
-        return await self._rest_call_async("group/heating/setBoostDuration", body=data)
+        return await self._rest_call("group/heating/setBoostDuration", body=data)
 
-    async def set_active_profile_async(self, index):
+    async def set_active_profile(self, index):
         data = {"groupId": self.id, "profileIndex": index}
-        return await self._rest_call_async("group/heating/setActiveProfile", body=data)
+        return await self._rest_call("group/heating/setActiveProfile", body=data)
 
-    async def set_control_mode_async(self, mode=ClimateControlMode.AUTOMATIC):
+    async def set_control_mode(self, mode=ClimateControlMode.AUTOMATIC):
         data = {"groupId": self.id, "controlMode": str(mode)}
-        return await self._rest_call_async("group/heating/setControlMode", body=data)
+        return await self._rest_call("group/heating/setControlMode", body=data)
 
 
 class HeatingDehumidifierGroup(Group):
@@ -1053,16 +1053,16 @@ class SwitchingProfileGroup(Group):
             super().__str__(), self.on, self.dimLevel, self.profileMode
         )
 
-    async def set_group_channels_async(self):
+    async def set_group_channels(self):
         channels = []
         for d in self.devices:
             channels.append[{"channelIndex": 1, "deviceId": d.id}]
         data = {"groupId": self.id, "channels": channels}
-        return await self._rest_call_async(
+        return await self._rest_call(
             "group/switching/profile/setGroupChannels", body=data
         )
 
-    async def set_profile_mode_async(self, devices, automatic=True):
+    async def set_profile_mode(self, devices, automatic=True):
         channels = []
         for d in devices:
             channels.append[{"channelIndex": 1, "deviceId": d.id}]
@@ -1071,13 +1071,13 @@ class SwitchingProfileGroup(Group):
             "channels": channels,
             "profileMode": ProfileMode.AUTOMATIC if automatic else ProfileMode.MANUAL,
         }
-        return await self._rest_call_async(
+        return await self._rest_call(
             "group/switching/profile/setProfileMode", body=data
         )
 
-    async def create_async(self, label):
+    async def create(self, label):
         data = {"label": label}
-        result = await self._rest_call_async(
+        result = await self._rest_call(
             "group/switching/profile/createSwitchingProfileGroup", body=data
         )
         if "groupId" in result:
@@ -1219,9 +1219,9 @@ class HotWaterGroup(Group):
     def __str__(self):
         return f"{super().__str__()} on({self.on}) onTime({self.onTime}) profileMode({self.profileMode})"
 
-    async def set_profile_mode_async(self, profileMode: ProfileMode):
+    async def set_profile_mode(self, profileMode: ProfileMode):
         data = {"groupId": self.id, "profileMode": profileMode}
-        return await self._rest_call_async("group/heating/setProfileMode", body=data)
+        return await self._rest_call("group/heating/setProfileMode", body=data)
 
 
 class AccessAuthorizationProfileGroup(Group):

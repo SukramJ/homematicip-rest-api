@@ -16,7 +16,7 @@ def test_access_controller_channel(fake_home: Home):
         assert ch.filteredMulticastRoutingEnabled == True
 
 
-def test_acceleration_sensor_channel(fake_home: Home):
+async def test_acceleration_sensor_channel(fake_home: Home):
     with no_ssl_verification():
         ch = fake_home.search_channel("3014F7110000000000000031", 1)
         assert isinstance(ch, AccelerationSensorChannel)
@@ -35,19 +35,19 @@ def test_acceleration_sensor_channel(fake_home: Home):
         assert ch.notificationSoundTypeHighToLow == NotificationSoundType.SOUND_LONG
         assert ch.notificationSoundTypeLowToHigh == NotificationSoundType.SOUND_LONG
 
-        ch.set_acceleration_sensor_event_filter_period(10.0)
-        ch.set_acceleration_sensor_mode(AccelerationSensorMode.ANY_MOTION)
-        ch.set_acceleration_sensor_neutral_position(
+        await ch.set_acceleration_sensor_event_filter_period(10.0)
+        await ch.set_acceleration_sensor_mode(AccelerationSensorMode.ANY_MOTION)
+        await ch.set_acceleration_sensor_neutral_position(
             AccelerationSensorNeutralPosition.HORIZONTAL
         )
-        ch.set_acceleration_sensor_sensitivity(
+        await ch.set_acceleration_sensor_sensitivity(
             AccelerationSensorSensitivity.SENSOR_RANGE_2G
         )
-        ch.set_acceleration_sensor_trigger_angle(30)
-        ch.set_notification_sound_type(NotificationSoundType.SOUND_SHORT, True)
-        ch.set_notification_sound_type(NotificationSoundType.SOUND_SHORT_SHORT, False)
+        await ch.set_acceleration_sensor_trigger_angle(30)
+        await ch.set_notification_sound_type(NotificationSoundType.SOUND_SHORT, True)
+        await ch.set_notification_sound_type(NotificationSoundType.SOUND_SHORT_SHORT, False)
 
-        fake_home.get_current_state()
+        await fake_home.get_current_state()
         ch = fake_home.search_channel("3014F7110000000000000031", 1)
         assert ch.accelerationSensorEventFilterPeriod == 10.0
         assert ch.accelerationSensorMode == AccelerationSensorMode.ANY_MOTION
@@ -66,7 +66,7 @@ def test_acceleration_sensor_channel(fake_home: Home):
         )
 
 
-def test_blind_channel(fake_home: Home):
+async def test_blind_channel(fake_home: Home):
     with no_ssl_verification():
         ch = fake_home.search_channel("3014F711BADCAFE000000001", 1)
         assert isinstance(ch, BlindChannel)
@@ -83,19 +83,19 @@ def test_blind_channel(fake_home: Home):
         assert ch.slatsReferenceTime == 2.0
         assert ch.topToBottomReferenceTime == 41.0
 
-        ch.set_shutter_level(0.5)
-        fake_home.get_current_state()
+        await ch.set_shutter_level(0.5)
+        await fake_home.get_current_state()
         ch = fake_home.search_channel("3014F711BADCAFE000000001", 1)
         assert ch.shutterLevel == 0.5
 
-        ch.set_slats_level(0.4, 0.6)
-        fake_home.get_current_state()
+        await ch.set_slats_level(0.4, 0.6)
+        await fake_home.get_current_state()
         ch = fake_home.search_channel("3014F711BADCAFE000000001", 1)
         assert ch.shutterLevel == 0.6
         assert ch.slatsLevel == 0.4
 
 
-def test_device_base_floor_heating_channel(fake_home: Home):
+async def test_device_base_floor_heating_channel(fake_home: Home):
     with no_ssl_verification():
         ch = fake_home.search_channel("3014F7110000000000000049", 0)
         assert isinstance(ch, DeviceBaseFloorHeatingChannel)
@@ -109,63 +109,63 @@ def test_device_base_floor_heating_channel(fake_home: Home):
         assert ch.valveProtectionSwitchingInterval == 14
 
         assert ch.minimumFloorHeatingValvePosition == 0.0
-        ch.set_minimum_floor_heating_valve_position(0.2)
-        fake_home.get_current_state()
+        await ch.set_minimum_floor_heating_valve_position(0.2)
+        await fake_home.get_current_state()
         ch = fake_home.search_channel("3014F7110000000000000049", 0)
         assert ch.minimumFloorHeatingValvePosition == 0.2
 
 
-def test_device_operation_lock_channel(fake_home: Home):
+async def test_device_operation_lock_channel(fake_home: Home):
     with no_ssl_verification():
         ch = fake_home.search_channel("3014F7110000000000000015", 0)
         assert isinstance(ch, DeviceOperationLockChannel)
 
-        ch.set_operation_lock(False)
-        fake_home.get_current_state()
+        await ch.set_operation_lock(False)
+        await fake_home.get_current_state()
         ch = fake_home.search_channel("3014F7110000000000000015", 0)
         assert ch.operationLockActive is False
 
-        ch.set_operation_lock(True)
-        fake_home.get_current_state()
+        await ch.set_operation_lock(True)
+        await fake_home.get_current_state()
         ch = fake_home.search_channel("3014F7110000000000000015", 0)
         assert ch.operationLockActive is True
 
 
-def test_dimmer_channel(fake_home: Home):
+async def test_dimmer_channel(fake_home: Home):
     with no_ssl_verification():
         ch = fake_home.search_channel("3014F711AAAA000000000005", 1)
         assert isinstance(ch, DimmerChannel)
         assert ch.dimLevel == 0.0
 
-        ch.set_dim_level(0.8)
-        fake_home.get_current_state()
+        await ch.set_dim_level(0.8)
+        await fake_home.get_current_state()
         ch = fake_home.search_channel("3014F711AAAA000000000005", 1)
         assert ch.dimLevel == 0.8
 
 
-def test_door_channel(fake_home: Home):
+async def test_door_channel(fake_home: Home):
     with no_ssl_verification():
         ch = fake_home.search_channel("3014F0000000000000FAF9B4", 1)
         assert isinstance(ch, DoorChannel)
         assert ch.doorState == DoorState.CLOSED
 
-        ch.send_door_command(DoorCommand.OPEN)
-        fake_home.get_current_state()
+        await ch.send_door_command(DoorCommand.OPEN)
+        await fake_home.get_current_state()
         ch = fake_home.search_channel("3014F0000000000000FAF9B4", 1)
 
         assert ch.doorState == DoorState.OPEN
 
 
-def test_door_lock_channel(fake_home: Home):
+async def test_door_lock_channel(fake_home: Home):
     with no_ssl_verification():
         ch = fake_home.search_channel("3014F7110000000000000DLD", 1)
         assert isinstance(ch, DoorLockChannel)
         assert ch.lockState == LockState.LOCKED
         assert ch.motorState == MotorState.STOPPED
 
-        result = ch.set_lock_state(LockState.OPEN)
+        result = await ch.set_lock_state(LockState.OPEN)
 
-        fake_home.get_current_state()
+        await fake_home.get_current_state()
         ch = fake_home.search_channel("3014F7110000000000000DLD", 1)
         assert ch.lockState == LockState.OPEN
 
@@ -205,38 +205,38 @@ def test_floor_terminal_block_mechanic_channel(fake_home: Home):
     assert ch.valveState == ValveState.ADJUSTMENT_TOO_SMALL
 
 
-def test_impulse_output_channel(fake_home: Home):
+async def test_impulse_output_channel(fake_home: Home):
     with no_ssl_verification():
         ch = fake_home.search_channel("3014F7110000000000000WGC", 2)
         assert isinstance(ch, ImpulseOutputChannel)
         assert ch.impulseDuration == 0.10000000149011612
 
-        ch.send_start_impulse()
-        fake_home.get_current_state()
+        await ch.send_start_impulse()
+        await fake_home.get_current_state()
         ch = fake_home.search_channel("3014F7110000000000000WGC", 2)
 
 
-def test_notification_light_channel(fake_home: Home):
+async def test_notification_light_channel(fake_home: Home):
     with no_ssl_verification():
         ch = fake_home.search_channel("3014F711BSL0000000000050", 2)
         assert isinstance(ch, NotificationLightChannel)
         assert ch.dimLevel == 0.0
         assert ch.simpleRGBColorState == RGBColorState.RED
 
-        ch.set_rgb_dim_level_with_time(RGBColorState.BLUE, 0.2, 10, 20)
-        fake_home.get_current_state()
+        await ch.set_rgb_dim_level_with_time(RGBColorState.BLUE, 0.2, 10, 20)
+        await fake_home.get_current_state()
         ch = fake_home.search_channel("3014F711BSL0000000000050", 2)
         assert ch.dimLevel == 0.2
         assert ch.simpleRGBColorState == RGBColorState.BLUE
 
-        ch.set_rgb_dim_level(RGBColorState.BLACK, 0.5)
-        fake_home.get_current_state()
+        await ch.set_rgb_dim_level(RGBColorState.BLACK, 0.5)
+        await fake_home.get_current_state()
         ch = fake_home.search_channel("3014F711BSL0000000000050", 2)
         assert ch.dimLevel == 0.5
         assert ch.simpleRGBColorState == RGBColorState.BLACK
 
 
-def test_notification_light_channel_v2(fake_home: Home):
+async def test_notification_light_channel_v2(fake_home: Home):
     with no_ssl_verification():
         ch = fake_home.search_channel("3014F711000000000000BSL2", 3)
         assert isinstance(ch, NotificationLightChannel)
@@ -244,27 +244,27 @@ def test_notification_light_channel_v2(fake_home: Home):
         assert ch.simpleRGBColorState == RGBColorState.GREEN
         assert ch.opticalSignalBehaviour == OpticalSignalBehaviour.BLINKING_MIDDLE
 
-        ch.set_optical_signal(OpticalSignalBehaviour.FLASH_MIDDLE, RGBColorState.BLUE, 0.75)
-        fake_home.get_current_state()
+        await ch.set_optical_signal(OpticalSignalBehaviour.FLASH_MIDDLE, RGBColorState.BLUE, 0.75)
+        await fake_home.get_current_state()
         ch = fake_home.search_channel("3014F711000000000000BSL2", 3)
         assert ch.dimLevel == 0.75
         assert ch.simpleRGBColorState == RGBColorState.BLUE
         assert ch.opticalSignalBehaviour == OpticalSignalBehaviour.FLASH_MIDDLE
 
 
-def test_notification_light_channel_v2_switch(fake_home: Home):
+async def test_notification_light_channel_v2_switch(fake_home: Home):
     with no_ssl_verification():
         ch = fake_home.search_channel("3014F711000000000000BSL2", 3)
         assert isinstance(ch, NotificationLightChannel)
         assert ch.on is True
 
-        ch.set_switch_state(False)
-        fake_home.get_current_state()
+        await ch.set_switch_state(False)
+        await fake_home.get_current_state()
         ch = fake_home.search_channel("3014F711000000000000BSL2", 3)
         assert ch.on is False
 
 
-def test_shading_channel(fake_home: Home):
+async def test_shading_channel(fake_home: Home):
     with no_ssl_verification():
         ch = fake_home.search_channel("3014F71100BLIND_MODULE00", 1)
         assert isinstance(ch, ShadingChannel)
@@ -272,19 +272,19 @@ def test_shading_channel(fake_home: Home):
         assert ch.primaryShadingLevel == 0.94956
         assert ch.secondaryShadingLevel == 0
 
-        ch.set_primary_shading_level(5)
-        fake_home.get_current_state()
+        await ch.set_primary_shading_level(5)
+        await fake_home.get_current_state()
         ch = fake_home.search_channel("3014F71100BLIND_MODULE00", 1)
         assert ch.primaryShadingLevel == 5
 
-        ch.set_secondary_shading_level(0.5, 1.0)
-        fake_home.get_current_state()
+        await ch.set_secondary_shading_level(0.5, 1.0)
+        await fake_home.get_current_state()
         ch = fake_home.search_channel("3014F71100BLIND_MODULE00", 1)
         assert ch.primaryShadingLevel == 0.5
         assert ch.secondaryShadingLevel == 1.0
 
 
-def test_shutter_channel(fake_home: Home):
+async def test_shutter_channel(fake_home: Home):
     with no_ssl_verification():
         ch = fake_home.search_channel("3014F711ACBCDABCADCA66", 1)
         assert isinstance(ch, ShutterChannel)
@@ -297,13 +297,13 @@ def test_shutter_channel(fake_home: Home):
         assert ch.selfCalibrationInProgress == None
         assert ch.topToBottomReferenceTime == 24.68
 
-        ch.set_shutter_level(0.5)
-        fake_home.get_current_state()
+        await ch.set_shutter_level(0.5)
+        await fake_home.get_current_state()
         ch = fake_home.search_channel("3014F711ACBCDABCADCA66", 1)
         assert ch.shutterLevel == 0.5
 
 
-def test_switch_channel(fake_home: Home):
+async def test_switch_channel(fake_home: Home):
     with no_ssl_verification():
         ch = fake_home.search_channel("3014F711000000000000FIO6", 11)
         assert isinstance(ch, SwitchChannel)
@@ -312,23 +312,23 @@ def test_switch_channel(fake_home: Home):
         assert ch.profileMode == ProfileMode.AUTOMATIC
         assert ch.userDesiredProfileMode == ProfileMode.AUTOMATIC
 
-        ch.set_switch_state(True)
-        fake_home.get_current_state()
+        await ch.set_switch_state(True)
+        await fake_home.get_current_state()
         ch = fake_home.search_channel("3014F711000000000000FIO6", 11)
         assert ch.on == True
 
-        ch.turn_off()
-        fake_home.get_current_state()
+        await ch.turn_off()
+        await fake_home.get_current_state()
         ch = fake_home.search_channel("3014F711000000000000FIO6", 11)
         assert ch.on == False
 
-        ch.turn_on()
-        fake_home.get_current_state()
+        await ch.turn_on()
+        await fake_home.get_current_state()
         ch = fake_home.search_channel("3014F711000000000000FIO6", 11)
         assert ch.on == True
 
 
-def test_switch_measuring_channel(fake_home: Home):
+async def test_switch_measuring_channel(fake_home: Home):
     with no_ssl_verification():
         ch = fake_home.search_channel("3014F7110000000000000108", 1)
         assert isinstance(ch, SwitchMeasuringChannel)
@@ -336,13 +336,13 @@ def test_switch_measuring_channel(fake_home: Home):
         assert ch.currentPowerConsumption == 0.0
         assert ch.on == False
 
-        ch.reset_energy_counter()
-        fake_home.get_current_state()
+        await ch.reset_energy_counter()
+        await fake_home.get_current_state()
         ch = fake_home.search_channel("3014F7110000000000000108", 1)
         assert ch.energyCounter == 0.0
 
-        ch.turn_on()
-        fake_home.get_current_state()
+        await ch.turn_on()
+        await fake_home.get_current_state()
         ch = fake_home.search_channel("3014F7110000000000000108", 1)
         assert ch.on == True
 
@@ -361,7 +361,7 @@ def test_switch_measuring_channel_all_attributes(fake_home: Home):
         assert ch.powerUpSwitchState == "PERMANENT_ON"
 
 
-def test_tilt_vibration_sensor_channel(fake_home: Home):
+async def test_tilt_vibration_sensor_channel(fake_home: Home):
     with no_ssl_verification():
         ch = fake_home.search_channel("3014F7110TILTVIBRATIONSENSOR", 1)
         assert isinstance(ch, TiltVibrationSensorChannel)
@@ -379,14 +379,14 @@ def test_tilt_vibration_sensor_channel(fake_home: Home):
         assert ch.accelerationSensorTriggerAngle == 45
         assert ch.accelerationSensorTriggered == True
 
-        ch.set_acceleration_sensor_event_filter_period(10.0)
-        ch.set_acceleration_sensor_mode(AccelerationSensorMode.ANY_MOTION)
-        ch.set_acceleration_sensor_sensitivity(
+        await ch.set_acceleration_sensor_event_filter_period(10.0)
+        await ch.set_acceleration_sensor_mode(AccelerationSensorMode.ANY_MOTION)
+        await ch.set_acceleration_sensor_sensitivity(
             AccelerationSensorSensitivity.SENSOR_RANGE_4G
         )
-        ch.set_acceleration_sensor_trigger_angle(30)
+        await ch.set_acceleration_sensor_trigger_angle(30)
 
-        fake_home.get_current_state()
+        await fake_home.get_current_state()
         ch = fake_home.search_device_by_id("3014F7110TILTVIBRATIONSENSOR")
         assert ch.accelerationSensorEventFilterPeriod == 10.0
         assert ch.accelerationSensorMode == AccelerationSensorMode.ANY_MOTION
@@ -397,7 +397,7 @@ def test_tilt_vibration_sensor_channel(fake_home: Home):
         assert ch.accelerationSensorTriggerAngle == 30
 
 
-def test_wall_mounted_thermostate_pro_channel(fake_home: Home):
+async def test_wall_mounted_thermostate_pro_channel(fake_home: Home):
     with no_ssl_verification():
         ch = fake_home.search_channel("3014F7110000000000000022", 1)
         assert ch.actualTemperature == 24.7
@@ -407,8 +407,8 @@ def test_wall_mounted_thermostate_pro_channel(fake_home: Home):
         assert ch.setPointTemperature == 5.0
         assert ch.temperatureOffset == 0.0
 
-        ch.set_display(ClimateControlDisplay.ACTUAL)
-        fake_home.get_current_state()
+        await ch.set_display(ClimateControlDisplay.ACTUAL)
+        await fake_home.get_current_state()
         ch = fake_home.search_channel("3014F7110000000000000022", 1)
         assert ch.display == ClimateControlDisplay.ACTUAL
 
@@ -426,7 +426,7 @@ def test_wall_mounted_thermostate_with_carbon_dioxide_sensor_channel(fake_home: 
         assert ch.vaporAmount == 8.169998811318226
 
 
-def test_water_sensor_channel(fake_home: Home):
+async def test_water_sensor_channel(fake_home: Home):
     with no_ssl_verification():
         ch = fake_home.search_channel("3014F7110000000000000050", 1)
         assert isinstance(ch, WaterSensorChannel)
@@ -438,13 +438,13 @@ def test_water_sensor_channel(fake_home: Home):
         assert ch.sirenWaterAlarmTrigger == WaterAlarmTrigger.WATER_MOISTURE_DETECTION
         assert ch.waterlevelDetected is False
 
-        ch.set_acoustic_alarm_timing(AcousticAlarmTiming.SIX_MINUTES)
-        ch.set_acoustic_alarm_signal(AcousticAlarmSignal.FREQUENCY_ALTERNATING_LOW_HIGH)
-        ch.set_inapp_water_alarm_trigger(WaterAlarmTrigger.MOISTURE_DETECTION)
-        ch.set_acoustic_water_alarm_trigger(WaterAlarmTrigger.NO_ALARM)
-        ch.set_siren_water_alarm_trigger(WaterAlarmTrigger.NO_ALARM)
+        await ch.set_acoustic_alarm_timing(AcousticAlarmTiming.SIX_MINUTES)
+        await ch.set_acoustic_alarm_signal(AcousticAlarmSignal.FREQUENCY_ALTERNATING_LOW_HIGH)
+        await ch.set_inapp_water_alarm_trigger(WaterAlarmTrigger.MOISTURE_DETECTION)
+        await ch.set_acoustic_water_alarm_trigger(WaterAlarmTrigger.NO_ALARM)
+        await ch.set_siren_water_alarm_trigger(WaterAlarmTrigger.NO_ALARM)
 
-        fake_home.get_current_state()
+        await fake_home.get_current_state()
         d = fake_home.search_channel("3014F7110000000000000050", 1)
         assert ch.acousticAlarmTiming == AcousticAlarmTiming.SIX_MINUTES
         assert (

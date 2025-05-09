@@ -7,7 +7,7 @@ import homematicip.cli.hmip_cli
 
 def main():
     """Run pypyr from script entry point."""
-    return asyncio.run(homematicip.cli.hmip_cli.main_async())
+    return asyncio.run(homematicip.cli.hmip_cli.main())
 
 
 if __name__ == '__main__':

@@ -20,12 +20,12 @@ from homematicip_demo.helper import (
 )
 
 
-def test_init():
+async def test_init():
     context = ConnectionContext(auth_token="auth_token", accesspoint_id="access_point_id")
-    with patch('homematicip.connection.connection_context.ConnectionContextBuilder.build_context_async',
+    with patch('homematicip.connection.connection_context.ConnectionContextBuilder.build_context',
                return_value=context) as mock_create:
         home = Home()
-        home.init('access_point_id', 'auth_token')
+        await home.init('access_point_id', 'auth_token')
         assert home._connection_context is context
         assert home._connection is not None
 
@@ -97,8 +97,8 @@ def test_home_location(fake_home: Home):
     )
 
 
-def test_home_download_configuration(fake_home: Home):
-    configuration = fake_home.download_configuration()
+async def test_home_download_configuration(fake_home: Home):
+    configuration = await fake_home.download_configuration()
 
     assert isinstance(configuration, dict)
 
@@ -109,7 +109,7 @@ async def test_home_download_configuration_without_context():
 
     assert home._connection_context is None
     with pytest.raises(Exception):
-        await home.download_configuration_async()
+        await home.download_configuration()
 
 
 @pytest.mark.asyncio
@@ -117,21 +117,21 @@ async def test_home_download_configuration_result_failed(fake_home: Home):
     mock_response = AsyncMock()
     mock_response.success = False
 
-    with patch.object(fake_home, '_rest_call_async', return_value=mock_response):
+    with patch.object(fake_home, '_rest_call', return_value=mock_response):
         with pytest.raises(Exception):
-            await fake_home.download_configuration_async()
+            await fake_home.download_configuration()
 
 
-def test_home_update_home(fake_home: Home):
-    configuration = fake_home.download_configuration()
+async def test_home_update_home(fake_home: Home):
+    configuration = await fake_home.download_configuration()
 
     fake_home.update_home(configuration)
 
 
-def test_home_set_location(fake_home: Home):
+async def test_home_set_location(fake_home: Home):
     with no_ssl_verification():
-        fake_home.set_location("Berlin, Germany", "52.530644", "13.383068")
-        fake_home.get_current_state()
+        await fake_home.set_location("Berlin, Germany", "52.530644", "13.383068")
+        await fake_home.get_current_state()
         assert fake_home.location.city == "Berlin, Germany"
         assert fake_home.location.latitude == "52.530644"
         assert fake_home.location.longitude == "13.383068"
@@ -176,7 +176,7 @@ def test_clients(fake_home: Home):
     assert str(client) == "label(TEST-Client)"
 
 
-def test_rules(fake_home: Home):
+async def test_rules(fake_home: Home):
     with no_ssl_verification():
         rule = fake_home.search_rule_by_id("00000000-0000-0000-0000-000000000065")
         assert rule.active is True
@@ -190,88 +190,88 @@ def test_rules(fake_home: Home):
         assert str(rule) == "SIMPLE Alarmanlage active(True)"
 
         # disable test
-        rule.disable()
-        rule.set_label("DISABLED_RULE")
-        fake_home.get_current_state()
+        await rule.disable()
+        await rule.set_label("DISABLED_RULE")
+        await fake_home.get_current_state()
         rule = fake_home.search_rule_by_id("00000000-0000-0000-0000-000000000065")
         assert rule.active is False
         assert rule.label == "DISABLED_RULE"
 
         # enable test
-        rule.enable()
-        rule.set_label("ENABLED_RULE")
-        fake_home.get_current_state()
+        await rule.enable()
+        await rule.set_label("ENABLED_RULE")
+        await fake_home.get_current_state()
         rule = fake_home.search_rule_by_id("00000000-0000-0000-0000-000000000065")
         assert rule.active is True
         assert rule.label == "ENABLED_RULE"
 
         rule.id = "INVALID_ID"
-        result = rule.disable()
+        result = await rule.disable()
         assert not result.success
-        result = rule.set_label("NEW LABEL")
+        result = await rule.set_label("NEW LABEL")
         assert not result.success
 
 
-def test_security_zones_activation(fake_home: Home):
+async def test_security_zones_activation(fake_home: Home):
     with no_ssl_verification():
         internal, external = fake_home.get_security_zones_activation()
         assert internal is False
         assert external is False
 
-        fake_home.set_security_zones_activation(True, True)
-        fake_home.get_current_state()
+        await fake_home.set_security_zones_activation(True, True)
+        await fake_home.get_current_state()
 
         internal, external = fake_home.get_security_zones_activation()
         assert internal is True
         assert external is True
 
 
-def test_set_pin(fake_home: Home):
+async def test_set_pin(fake_home: Home):
     with no_ssl_verification():
-        def get_pin(fake_home_inner):
-            result = fake_home_inner._rest_call("home/getPin")
+        async def get_pin(fake_home_inner):
+            result = await fake_home_inner._rest_call("home/getPin")
             return result.json["pin"]
 
-        assert get_pin(fake_home) is None
+        assert await get_pin(fake_home) is None
 
-        fake_home.set_pin("1234")
-        assert get_pin(fake_home) == "1234"
+        await fake_home.set_pin("1234")
+        assert await get_pin(fake_home) == "1234"
 
-        fake_home.set_pin("5555")
+        await fake_home.set_pin("5555")
 
         # ignore errors. just check if the old pin is still active
-        assert get_pin(fake_home) == "1234"
+        assert await get_pin(fake_home) == "1234"
 
-        fake_home.set_pin("5555", "1234")
-        assert get_pin(fake_home) == "5555"
+        await fake_home.set_pin("5555", "1234")
+        assert await get_pin(fake_home) == "5555"
 
-        fake_home.set_pin(None, "5555")
-        assert get_pin(fake_home) is None
+        await fake_home.set_pin(None, "5555")
+        assert await get_pin(fake_home) is None
 
 
-def test_set_timezone(fake_home: Home):
+async def test_set_timezone(fake_home: Home):
     with no_ssl_verification():
         assert fake_home.timeZoneId == "Europe/Vienna"
-        fake_home.set_timezone("Europe/Berlin")
-        fake_home.get_current_state()
+        await fake_home.set_timezone("Europe/Berlin")
+        await fake_home.get_current_state()
         assert fake_home.timeZoneId == "Europe/Berlin"
 
-        fake_home.set_timezone("Europe/Vienna")
-        fake_home.get_current_state()
+        await fake_home.set_timezone("Europe/Vienna")
+        await fake_home.get_current_state()
         assert fake_home.timeZoneId == "Europe/Vienna"
 
 
-def test_set_powermeter_unit_price(fake_home: Home):
+async def test_set_powermeter_unit_price(fake_home: Home):
     with no_ssl_verification():
-        fake_home.set_powermeter_unit_price(12.0)
-        fake_home.get_current_state()
+        await fake_home.set_powermeter_unit_price(12.0)
+        await fake_home.get_current_state()
         assert fake_home.powerMeterUnitPrice == 12.0
-        fake_home.set_powermeter_unit_price(8.5)
-        fake_home.get_current_state()
+        await fake_home.set_powermeter_unit_price(8.5)
+        await fake_home.get_current_state()
         assert fake_home.powerMeterUnitPrice == 8.5
 
 
-def test_indoor_climate_home(fake_home: Home):
+async def test_indoor_climate_home(fake_home: Home):
     with no_ssl_verification():
         for fh in fake_home.functionalHomes:
             if not isinstance(fh, IndoorClimateHome):
@@ -284,27 +284,27 @@ def test_indoor_climate_home(fake_home: Home):
             assert fh.optimumStartStopEnabled is False
 
             minutes = 20
-            fake_home.activate_absence_with_duration(minutes)
+            await fake_home.activate_absence_with_duration(minutes)
             absence_end = datetime.now() + timedelta(minutes=minutes)
             absence_end = absence_end.replace(second=0, microsecond=0)
 
-            fake_home.get_current_state()
+            await fake_home.get_current_state()
 
             assert fh.absenceType == AbsenceType.PERIOD
             assert fh.absenceEndTime == absence_end
 
             absence_end = datetime.strptime("2100_01_01 22:22", "%Y_%m_%d %H:%M")
 
-            fake_home.activate_absence_with_period(absence_end)
+            await fake_home.activate_absence_with_period(absence_end)
 
-            fake_home.get_current_state()
+            await fake_home.get_current_state()
 
             assert fh.absenceType == AbsenceType.PERIOD
             assert fh.absenceEndTime == absence_end
 
-            fake_home.activate_absence_permanent()
+            await fake_home.activate_absence_permanent()
 
-            fake_home.get_current_state()
+            await fake_home.get_current_state()
 
             assert fh.absenceType == AbsenceType.PERMANENT
             assert fh.absenceEndTime == datetime.strptime(
@@ -312,9 +312,9 @@ def test_indoor_climate_home(fake_home: Home):
             )
             assert fh.ecoDuration == EcoDuration.PERMANENT
 
-            fake_home.deactivate_absence()
+            await fake_home.deactivate_absence()
 
-            fake_home.get_current_state()
+            await fake_home.get_current_state()
             assert fh.absenceType == AbsenceType.NOT_ABSENT
             assert fh.absenceEndTime is None
 
@@ -336,61 +336,61 @@ def test_get_functionalHome(fake_home: Home):
     assert functional_home is None
 
 
-def test_security_setIntrusionAlertThroughSmokeDetectors(fake_home: Home):
+async def test_security_setIntrusionAlertThroughSmokeDetectors(fake_home: Home):
     with no_ssl_verification():
         security_alarm_home = fake_home.get_functionalHome(SecurityAndAlarmHome)
         assert security_alarm_home.intrusionAlertThroughSmokeDetectors is False
 
-        fake_home.set_intrusion_alert_through_smoke_detectors(True)
-        fake_home.get_current_state()
+        await fake_home.set_intrusion_alert_through_smoke_detectors(True)
+        await fake_home.get_current_state()
         security_alarm_home = fake_home.get_functionalHome(SecurityAndAlarmHome)
         assert security_alarm_home.intrusionAlertThroughSmokeDetectors is True
 
-        fake_home.set_intrusion_alert_through_smoke_detectors(False)
-        fake_home.get_current_state()
+        await fake_home.set_intrusion_alert_through_smoke_detectors(False)
+        await fake_home.get_current_state()
         security_alarm_home = fake_home.get_functionalHome(SecurityAndAlarmHome)
         assert security_alarm_home.intrusionAlertThroughSmokeDetectors is False
 
 
-def test_heating_vacation(fake_home: Home):
+async def test_heating_vacation(fake_home: Home):
     with no_ssl_verification():
         tomorrow = datetime.now() + timedelta(days=1)
         tomorrow = tomorrow.replace(second=0, microsecond=0)
 
-        fake_home.activate_vacation(tomorrow, 12)
+        await fake_home.activate_vacation(tomorrow, 12)
 
-        fake_home.get_current_state()
+        await fake_home.get_current_state()
         heating_home = fake_home.get_functionalHome(IndoorClimateHome)
         assert heating_home.absenceEndTime == tomorrow
         assert heating_home.absenceType == AbsenceType.VACATION
 
-        fake_home.deactivate_vacation()
+        await fake_home.deactivate_vacation()
 
-        fake_home.get_current_state()
+        await fake_home.get_current_state()
         heating_home = fake_home.get_functionalHome(IndoorClimateHome)
         assert heating_home.absenceEndTime is None
         assert heating_home.absenceType == AbsenceType.NOT_ABSENT
 
 
-def test_security_setZoneActivationDelay(fake_home: Home):
+async def test_security_setZoneActivationDelay(fake_home: Home):
     with no_ssl_verification():
         security_alarm_home = fake_home.get_functionalHome(SecurityAndAlarmHome)
         assert security_alarm_home.zoneActivationDelay == 0.0
 
-        fake_home.set_zone_activation_delay(5.0)
-        fake_home.get_current_state()
+        await fake_home.set_zone_activation_delay(5.0)
+        await fake_home.get_current_state()
         security_alarm_home = fake_home.get_functionalHome(SecurityAndAlarmHome)
         assert security_alarm_home.zoneActivationDelay == 5.0
 
-        fake_home.set_zone_activation_delay(0.0)
-        fake_home.get_current_state()
+        await fake_home.set_zone_activation_delay(0.0)
+        await fake_home.get_current_state()
         security_alarm_home = fake_home.get_functionalHome(SecurityAndAlarmHome)
         assert security_alarm_home.zoneActivationDelay == 0.0
 
 
-def test_home_getSecurityJournal(fake_home: Home):
+async def test_home_getSecurityJournal(fake_home: Home):
     with no_ssl_verification():
-        journal = fake_home.get_security_journal()
+        journal = await fake_home.get_security_journal()
         # todo make more advanced tests
         assert isinstance(journal[0], ActivationChangedEvent)
         assert isinstance(journal[1], ActivationChangedEvent)
@@ -402,10 +402,10 @@ def test_home_getSecurityJournal(fake_home: Home):
         assert isinstance(journal[7], SecurityEvent)
 
 
-def test_home_unknown_types(fake_home: Home):
+async def test_home_unknown_types(fake_home: Home):
     with no_ssl_verification():
-        fake_home._rest_call("fake/loadConfig", {"file": "unknown_types.json"})
-        fake_home.get_current_state(clear_config=True)
+        await fake_home._rest_call("fake/loadConfig", {"file": "unknown_types.json"})
+        await fake_home.get_current_state(clear_config=True)
         group = fake_home.groups[0]
         assert isinstance(group, Group)
         assert group.groupType == "DUMMY_GROUP"
@@ -419,9 +419,9 @@ def test_home_unknown_types(fake_home: Home):
         assert func_home.solution == "DUMMY_FUNCTIONAL_HOME"
 
 
-def test_home_getOAuthOTK(fake_home: Home):
+async def test_home_getOAuthOTK(fake_home: Home):
     with no_ssl_verification():
-        token = fake_home.get_OAuth_OTK()
+        token = await fake_home.get_OAuth_OTK()
         assert token.authToken == "C001ED"
         assert token.expirationTimestamp == datetime(
             2018, 12, 23, 11, 38, 21, 680000
@@ -435,8 +435,8 @@ def test_search_channel(fake_home: Home):
         assert ch.device.id == "3014F71100000000000WWRC6"
 
 
-def test_get_devices_fails(fake_home: Home):
-    config = fake_home.download_configuration()
+async def test_get_devices_fails(fake_home: Home):
+    config = await fake_home.download_configuration()
 
     with patch.object(fake_home, 'search_device_by_id', side_effect=Exception("Device not found")):
         result = fake_home._get_devices(config)
@@ -448,23 +448,23 @@ def test_search_channel_not_found(fake_home: Home):
     assert ch is None
 
 
-def test_set_cooling(fake_home):
-    result = fake_home.set_cooling(True)
+async def test_set_cooling(fake_home):
+    result = await fake_home.set_cooling(True)
     assert result.success
 
 
-def test_get_security_journal_with_error(fake_home: Home):
-    with patch.object(fake_home, '_rest_call_async', return_value=AsyncMock(success=False)):
-        result = fake_home.get_security_journal()
+async def test_get_security_journal_with_error(fake_home: Home):
+    with patch.object(fake_home, '_rest_call', return_value=AsyncMock(success=False)):
+        result = await fake_home.get_security_journal()
         assert result is None
 
 
-def test_set_zones_device_assignment(fake_home: Home):
+async def test_set_zones_device_assignment(fake_home: Home):
     d = Device(None)
     d.id = "device1"
     internal = external = [d]
-    with patch.object(fake_home, '_rest_call_async', return_value=AsyncMock(success=True)):
-        result = fake_home.set_zones_device_assignment(internal, external)
+    with patch.object(fake_home, '_rest_call', return_value=AsyncMock(success=True)):
+        result = await fake_home.set_zones_device_assignment(internal, external)
         assert result.success
 
 
@@ -750,7 +750,7 @@ async def test_enable_events(fake_home):
     mock_websocket_handler.listen = AsyncMock()
     mock_additional_handler = AsyncMock()
 
-    with patch('homematicip.async_home.WebSocketHandler', return_value=mock_websocket_handler):
+    with patch('homematicip.home.WebSocketHandler', return_value=mock_websocket_handler):
         await fake_home.enable_events(mock_additional_handler)
 
         assert fake_home._websocket_client is mock_websocket_handler
@@ -770,7 +770,7 @@ async def test_enable_events_active(fake_home):
 async def test_disable_events(fake_home):
     fake_client = AsyncMock()
     fake_home._websocket_client = fake_client
-    await fake_home.disable_events_async()
+    await fake_home.disable_events()
 
     assert fake_home._websocket_client is None
-    assert fake_client.stop_listening_async.called
+    assert fake_client.stop_listening.called

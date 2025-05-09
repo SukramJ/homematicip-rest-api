@@ -3,7 +3,6 @@ import logging
 
 import pytest
 
-from homematicip.async_home import AsyncHome
 from homematicip.base.enums import CliActions, DoorState
 from homematicip.base.helpers import anonymizeConfig, handle_config
 from homematicip.cli.hmip_cli import (
@@ -90,60 +89,60 @@ def test_get_target_channels(fake_home: Home):
 
 
 @pytest.mark.asyncio
-async def test_execute_action_for_device_shutter_level(fake_home_async: AsyncHome):
+async def test_execute_action_for_device_shutter_level(fake_home: Home):
     class Args:
         def __init__(self) -> None:
             self.channels: list = [1, 2, 3]
 
     args = Args()
-    d = fake_home_async.search_device_by_id("3014F71100000000000DRBL4")
+    d = fake_home.search_device_by_id("3014F71100000000000DRBL4")
 
     with no_ssl_verification():
         await _execute_action_for_device(
-            d, args, CliActions.SET_SHUTTER_LEVEL, "async_set_shutter_level", 0.5
+            d, args, CliActions.SET_SHUTTER_LEVEL, "set_shutter_level", 0.5
         )
-        await fake_home_async.get_current_state_async()
-        d = fake_home_async.search_device_by_id("3014F71100000000000DRBL4")
+        await fake_home.get_current_state()
+        d = fake_home.search_device_by_id("3014F71100000000000DRBL4")
         assert d.functionalChannels[1].shutterLevel == 0.5
         assert d.functionalChannels[2].shutterLevel == 0.5
         assert d.functionalChannels[3].shutterLevel == 0.5
 
 
 @pytest.mark.asyncio
-async def test_execute_action_for_device_slats_level(fake_home_async: AsyncHome):
+async def test_execute_action_for_device_slats_level(fake_home: Home):
     class Args:
         def __init__(self) -> None:
             self.channels: list = [1, 2, 3]
 
     args = Args()
-    d = fake_home_async.search_device_by_id("3014F71100000000000DRBL4")
+    d = fake_home.search_device_by_id("3014F71100000000000DRBL4")
 
     with no_ssl_verification():
         await _execute_action_for_device(
-            d, args, CliActions.SET_SLATS_LEVEL, "async_set_slats_level", 0.5
+            d, args, CliActions.SET_SLATS_LEVEL, "set_slats_level", 0.5
         )
-        await fake_home_async.get_current_state_async()
-        d = fake_home_async.search_device_by_id("3014F71100000000000DRBL4")
+        await fake_home.get_current_state()
+        d = fake_home.search_device_by_id("3014F71100000000000DRBL4")
         assert d.functionalChannels[1].slatsLevel == 0.5
         assert d.functionalChannels[2].slatsLevel == 0.5
         assert d.functionalChannels[3].slatsLevel == 0.5
 
 
 @pytest.mark.asyncio
-async def test_execute_action_for_device_send_door_command(fake_home_async: AsyncHome):
+async def test_execute_action_for_device_send_door_command(fake_home: Home):
     class Args:
         def __init__(self) -> None:
             self.channels = None
 
     args = Args()
-    d = fake_home_async.search_device_by_id("3014F0000000000000FAF9B4")
+    d = fake_home.search_device_by_id("3014F0000000000000FAF9B4")
 
     with no_ssl_verification():
         await _execute_action_for_device(
-            d, args, CliActions.SEND_DOOR_COMMAND, "async_send_door_command", "OPEN"
+            d, args, CliActions.SEND_DOOR_COMMAND, "send_door_command", "OPEN"
         )
-        await fake_home_async.get_current_state_async()
-        d = fake_home_async.search_device_by_id("3014F0000000000000FAF9B4")
+        await fake_home.get_current_state()
+        d = fake_home.search_device_by_id("3014F0000000000000FAF9B4")
         assert d.functionalChannels[1].doorState == DoorState.OPEN
 
 

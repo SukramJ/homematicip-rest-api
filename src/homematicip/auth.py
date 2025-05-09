@@ -53,7 +53,7 @@ class Auth:
             "sgtin": access_point
         }
 
-        return await self.connection.async_post("auth/connectionRequest", data, headers)
+        return await self.connection.post("auth/connectionRequest", data, headers)
 
     async def is_request_acknowledged(self) -> bool:
         LOGGER.debug("Checking if request is acknowledged")
@@ -62,7 +62,7 @@ class Auth:
             "accessPointId": self.accesspoint_id
         }
 
-        result = await self.connection.async_post("auth/isRequestAcknowledged", data, self.headers)
+        result = await self.connection.post("auth/isRequestAcknowledged", data, self.headers)
 
         LOGGER.debug(f"Request acknowledged result: {result}")
         return result.status == 200
@@ -72,7 +72,7 @@ class Auth:
         @return: The auth token"""
         LOGGER.debug("Requesting auth token")
         data = {"deviceId": self.client_id}
-        result = await self.connection.async_post("auth/requestAuthToken", data, self.headers)
+        result = await self.connection.post("auth/requestAuthToken", data, self.headers)
         LOGGER.debug(f"Request auth token result: {result}")
 
         return result.json["authToken"]
@@ -84,7 +84,7 @@ class Auth:
 
         LOGGER.debug("Confirming auth token")
         data = {"deviceId": self.client_id, "authToken": auth_token}
-        result = await self.connection.async_post("auth/confirmAuthToken", data, self.headers)
+        result = await self.connection.post("auth/confirmAuthToken", data, self.headers)
         LOGGER.debug(f"Confirm auth token result: {result}")
 
         return result.json["clientId"]

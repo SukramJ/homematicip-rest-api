@@ -23,7 +23,7 @@ class RateLimitedRestConnection(RestConnection):
         super().__init__(context, httpx_client_session=httpx_client_session)
         self._buckets = Buckets(tokens=tokens, fill_rate=fill_rate)
 
-    async def async_post(self, url: str, data: dict | None = None, custom_header: dict | None = None) -> RestResult:
+    async def post(self, url: str, data: dict | None = None, custom_header: dict | None = None) -> RestResult:
         """Post data to the HomematicIP Cloud API."""
         await self._buckets.wait_and_take()
-        return await super().async_post(url, data, custom_header)
+        return await super().post(url, data, custom_header)

@@ -7,7 +7,7 @@ from homematicip.connection.connection_url_resolver import ConnectionUrlResolver
 
 
 @pytest.mark.asyncio
-async def test_lookup_urls_async_with_client_session(mocker):
+async def test_lookup_urls_with_client_session(mocker):
     response = mocker.Mock(spec=httpx.Response)
     response.status_code = 200
     response.json.return_value = {"urlREST": "https://example.com/rest", "urlWebSocket": "wss://example.com/ws"}
@@ -28,7 +28,7 @@ async def test_lookup_urls_async_with_client_session(mocker):
     mock_client = AsyncMock(spec=httpx.AsyncClient)
     mock_client.post.return_value = response
 
-    rest_url, websocket_url = await ConnectionUrlResolver.lookup_urls_async(
+    rest_url, websocket_url = await ConnectionUrlResolver.lookup_urls(
         client_characteristics,
         lookup_url,
         httpx_client_session=mock_client
@@ -40,7 +40,7 @@ async def test_lookup_urls_async_with_client_session(mocker):
 
 
 @pytest.mark.asyncio
-async def test_lookup_urls_async_without_client_session(mocker):
+async def test_lookup_urls_without_client_session(mocker):
     response = mocker.Mock(spec=httpx.Response)
     response.status_code = 200
     response.json.return_value = {"urlREST": "https://example.com/rest", "urlWebSocket": "wss://example.com/ws"}
@@ -63,7 +63,7 @@ async def test_lookup_urls_async_without_client_session(mocker):
     }
     lookup_url = "https://example.com/lookup"
 
-    rest_url, websocket_url = await ConnectionUrlResolver.lookup_urls_async(
+    rest_url, websocket_url = await ConnectionUrlResolver.lookup_urls(
         client_characteristics,
         lookup_url
     )

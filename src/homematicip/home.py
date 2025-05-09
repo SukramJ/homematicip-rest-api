@@ -21,7 +21,7 @@ from homematicip.weather import Weather
 LOGGER = logging.getLogger(__name__)
 
 
-class AsyncHome(HomeMaticIPObject):
+class Home(HomeMaticIPObject):
     """this class represents the 'Home' of the homematic ip"""
 
     _typeClassMap = TYPE_CLASS_MAP
@@ -74,14 +74,14 @@ class AsyncHome(HomeMaticIPObject):
         self.rules = []
         self.functionalHomes = []
 
-    async def init_async(self, access_point_id, auth_token: str | None = None, lookup=True, use_rate_limiting=True):
+    async def init(self, access_point_id, auth_token: str | None = None, lookup=True, use_rate_limiting=True):
         """Initializes the home with the given access point id and auth token
         :param access_point_id: the access point id
         :param auth_token: the auth token
         :param lookup: if set to true, the urls will be looked up
         :param use_rate_limiting: if set to true, the connection will be rate limited
         """
-        self._connection_context = await ConnectionContextBuilder.build_context_async(accesspoint_id=access_point_id,
+        self._connection_context = await ConnectionContextBuilder.build_context(accesspoint_id=access_point_id,
                                                                                       auth_token=auth_token)
         self._connection = ConnectionFactory.create_connection(self._connection_context, use_rate_limiting)
 
@@ -169,7 +169,7 @@ class AsyncHome(HomeMaticIPObject):
         if handler in self._on_channel_event:
             self._on_channel_event.remove(handler)
 
-    async def download_configuration_async(self) -> dict:
+    async def download_configuration(self) -> dict:
         """downloads the current configuration from the cloud
 
         Returns
@@ -179,7 +179,7 @@ class AsyncHome(HomeMaticIPObject):
             raise Exception("Home not initialized. Run init() first.")
 
         client_characteristics = ClientCharacteristicsBuilder.get(self._connection_context.accesspoint_id)
-        result = await self._rest_call_async(
+        result = await self._rest_call(
             "home/getCurrentState", client_characteristics
         )
 
@@ -188,14 +188,14 @@ class AsyncHome(HomeMaticIPObject):
 
         return result.json
 
-    async def get_current_state_async(self, clear_config: bool = False):
+    async def get_current_state(self, clear_config: bool = False):
         """downloads the current configuration and parses it into self
 
         Args:
             clear_config(bool): if set to true, this function will remove all old objects
             from self.devices, self.client, ... to have a fresh config instead of reparsing them
         """
-        json_state = await self.download_configuration_async()
+        json_state = await self.download_configuration()
         return self.update_home(json_state, clear_config)
 
     def update_home(self, json_state, clear_config: bool = False):
@@ -446,7 +446,7 @@ class AsyncHome(HomeMaticIPObject):
                     internal_active = g.active
         return internal_active, external_active
 
-    async def set_security_zones_activation_async(self, internal=True, external=True):
+    async def set_security_zones_activation(self, internal=True, external=True):
         """this function will set the alarm system to armed or disable it
 
         Examples:
@@ -463,64 +463,64 @@ class AsyncHome(HomeMaticIPObject):
         :param external: activates/deactivates the external zone
         """
         data = {"zonesActivation": {"EXTERNAL": external, "INTERNAL": internal}}
-        return await self._rest_call_async("home/security/setZonesActivation", data)
+        return await self._rest_call("home/security/setZonesActivation", data)
 
-    async def set_silent_alarm_async(self, internal=True, external=True):
+    async def set_silent_alarm(self, internal=True, external=True):
         """this function will set the silent alarm for internal or external
 
         :param internal: activates/deactivates the silent alarm for internal zone
         :param external: activates/deactivates the silent alarm for the external zone
         """
         data = {"zonesSilentAlarm": {"EXTERNAL": external, "INTERNAL": internal}}
-        return await self._rest_call_async("home/security/setZonesSilentAlarm", data)
+        return await self._rest_call("home/security/setZonesSilentAlarm", data)
 
-    async def set_location_async(self, city, latitude, longitude):
+    async def set_location(self, city, latitude, longitude):
         data = {"city": city, "latitude": latitude, "longitude": longitude}
-        return await self._rest_call_async("home/setLocation", data)
+        return await self._rest_call("home/setLocation", data)
 
-    async def set_cooling_async(self, cooling):
+    async def set_cooling(self, cooling):
         data = {"cooling": cooling}
-        return await self._rest_call_async("home/heating/setCooling", data)
+        return await self._rest_call("home/heating/setCooling", data)
 
-    async def set_intrusion_alert_through_smoke_detectors_async(self, activate: bool = True):
+    async def set_intrusion_alert_through_smoke_detectors(self, activate: bool = True):
         """activate or deactivate if smoke detectors should "ring" during an alarm
 
         :param activate: True will let the smoke detectors "ring" during an alarm
         """
         data = {"intrusionAlertThroughSmokeDetectors": activate}
-        return await self._rest_call_async(
+        return await self._rest_call(
             "home/security/setIntrusionAlertThroughSmokeDetectors", data
         )
 
-    async def activate_absence_with_period_async(self, endtime: datetime):
+    async def activate_absence_with_period(self, endtime: datetime):
         """activates the absence mode until the given time
 
         :param endtime: the time when the absence should automatically be disabled
         """
         data = {"endTime": endtime.strftime("%Y_%m_%d %H:%M")}
-        return await self._rest_call_async(
+        return await self._rest_call(
             "home/heating/activateAbsenceWithPeriod", data
         )
 
-    async def activate_absence_permanent_async(self):
+    async def activate_absence_permanent(self):
         """activates the absence forever"""
-        return await self._rest_call_async("home/heating/activateAbsencePermanent")
+        return await self._rest_call("home/heating/activateAbsencePermanent")
 
-    async def activate_absence_with_duration_async(self, duration: int):
+    async def activate_absence_with_duration(self, duration: int):
         """activates the absence mode for a given time
 
         :param duration: the absence duration in minutes
         """
         data = {"duration": duration}
-        return await self._rest_call_async(
+        return await self._rest_call(
             "home/heating/activateAbsenceWithDuration", data
         )
 
-    async def deactivate_absence_async(self):
+    async def deactivate_absence(self):
         """deactivates the absence mode immediately"""
-        return await self._rest_call_async("home/heating/deactivateAbsence")
+        return await self._rest_call("home/heating/deactivateAbsence")
 
-    async def activate_vacation_async(self, endtime: datetime, temperature: float):
+    async def activate_vacation(self, endtime: datetime, temperature: float):
         """activates the vacation mode until the given time
 
         :param endtime: the time when the vacation mode should automatically be disabled
@@ -530,13 +530,13 @@ class AsyncHome(HomeMaticIPObject):
             "endTime": endtime.strftime("%Y_%m_%d %H:%M"),
             "temperature": temperature,
         }
-        return await self._rest_call_async("home/heating/activateVacation", data)
+        return await self._rest_call("home/heating/activateVacation", data)
 
-    async def deactivate_vacation_async(self):
+    async def deactivate_vacation(self):
         """deactivates the vacation mode immediately"""
-        return await self._rest_call_async("home/heating/deactivateVacation")
+        return await self._rest_call("home/heating/deactivateVacation")
 
-    async def set_pin_async(self, new_pin: str | None, old_pin: str | None = None) -> dict:
+    async def set_pin(self, new_pin: str | None, old_pin: str | None = None) -> dict:
         """sets a new pin for the home
 
         :param new_pin: the new pin
@@ -552,21 +552,21 @@ class AsyncHome(HomeMaticIPObject):
             headers = self._connection._headers
             headers["PIN"] = str(old_pin)
 
-        result = await self._rest_call_async("home/setPin", body={"pin": new_pin}, custom_header=headers)
+        result = await self._rest_call("home/setPin", body={"pin": new_pin}, custom_header=headers)
 
         if not result.success:
             LOGGER.error("Could not set the pin. Error: %s", result.status_text)
 
         return result.json
 
-    async def set_zone_activation_delay_async(self, delay):
+    async def set_zone_activation_delay(self, delay):
         data = {"zoneActivationDelay": delay}
-        return await self._rest_call_async(
+        return await self._rest_call(
             "home/security/setZoneActivationDelay", body=data
         )
 
-    async def get_security_journal_async(self):
-        journal = await self._rest_call_async("home/security/getSecurityJournal")
+    async def get_security_journal(self):
+        journal = await self._rest_call("home/security/getSecurityJournal")
 
         if not journal.success:
             LOGGER.error(
@@ -597,25 +597,25 @@ class AsyncHome(HomeMaticIPObject):
         """
         return group.delete()
 
-    async def get_OAuth_OTK_async(self):
+    async def get_OAuth_OTK(self):
         token = OAuthOTK(self._connection)
-        result = await self._rest_call_async("home/getOAuthOTK")
+        result = await self._rest_call("home/getOAuthOTK")
         token.from_json(result.json)
         return token
 
-    async def set_timezone_async(self, timezone: str):
+    async def set_timezone(self, timezone: str):
         """sets the timezone for the AP. e.g. "Europe/Berlin"
 
         :param timezone: the new timezone
         """
         data = {"timezoneId": timezone}
-        return await self._rest_call_async("home/setTimezone", body=data)
+        return await self._rest_call("home/setTimezone", body=data)
 
-    async def set_powermeter_unit_price_async(self, price):
+    async def set_powermeter_unit_price(self, price):
         data = {"powerMeterUnitPrice": price}
-        return await self._rest_call_async("home/setPowerMeterUnitPrice", body=data)
+        return await self._rest_call("home/setPowerMeterUnitPrice", body=data)
 
-    async def set_zones_device_assignment_async(self, internal_devices, external_devices) -> dict:
+    async def set_zones_device_assignment(self, internal_devices, external_devices) -> dict:
         """sets the devices for the security zones
 
         :param internal_devices: the devices which should be used for the internal zone
@@ -626,17 +626,17 @@ class AsyncHome(HomeMaticIPObject):
         internal = [x.id for x in internal_devices]
         external = [x.id for x in external_devices]
         data = {"zonesDeviceAssignment": {"INTERNAL": internal, "EXTERNAL": external}}
-        return await self._rest_call_async(
+        return await self._rest_call(
             "home/security/setZonesDeviceAssignment", body=data
         )
 
-    async def start_inclusion_async(self, device_id: str):
+    async def start_inclusion(self, device_id: str):
         """start inclusion mode for specific device
         
         :param device_id: sgtin of device
         """
         data = {"deviceId": device_id}
-        return await self._rest_call_async(
+        return await self._rest_call(
             "home/startInclusionModeForDevice", body=data
         )
 
@@ -652,11 +652,11 @@ class AsyncHome(HomeMaticIPObject):
 
         await self._websocket_client.listen(self._connection_context)
 
-    async def disable_events_async(self):
+    async def disable_events(self):
         """Stop Websocket Connection"""
-        logger.debug("Called disable_events_async")
+        logger.debug("Called disable_events")
         if self._websocket_client:
-            await self._websocket_client.stop_listening_async()
+            await self._websocket_client.stop_listening()
             self._websocket_client = None
 
     async def _ws_on_message(self, message):

@@ -44,7 +44,7 @@ def test_room_control_device_analog(fake_home: Home):
     )
 
 
-def test_acceleration_sensor(fake_home: Home):
+async def test_acceleration_sensor(fake_home: Home):
     d = fake_home.search_device_by_id("3014F7110000000000000031")
     assert isinstance(d, AccelerationSensor)
     assert d.accelerationSensorEventFilterPeriod == 3.0
@@ -70,18 +70,18 @@ def test_acceleration_sensor(fake_home: Home):
         " notificationSoundTypeLowToHigh(SOUND_LONG)"
     )
     with no_ssl_verification():
-        d.set_acceleration_sensor_event_filter_period(10.0)
-        d.set_acceleration_sensor_mode(AccelerationSensorMode.ANY_MOTION)
-        d.set_acceleration_sensor_neutral_position(
+        await d.set_acceleration_sensor_event_filter_period(10.0)
+        await d.set_acceleration_sensor_mode(AccelerationSensorMode.ANY_MOTION)
+        await d.set_acceleration_sensor_neutral_position(
             AccelerationSensorNeutralPosition.HORIZONTAL
         )
-        d.set_acceleration_sensor_sensitivity(
+        await d.set_acceleration_sensor_sensitivity(
             AccelerationSensorSensitivity.SENSOR_RANGE_2G
         )
-        d.set_acceleration_sensor_trigger_angle(30)
-        d.set_notification_sound_type(NotificationSoundType.SOUND_SHORT, True)
-        d.set_notification_sound_type(NotificationSoundType.SOUND_SHORT_SHORT, False)
-        fake_home.get_current_state()
+        await d.set_acceleration_sensor_trigger_angle(30)
+        await d.set_notification_sound_type(NotificationSoundType.SOUND_SHORT, True)
+        await d.set_notification_sound_type(NotificationSoundType.SOUND_SHORT_SHORT, False)
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F7110000000000000031")
         assert d.accelerationSensorEventFilterPeriod == 10.0
         assert d.accelerationSensorMode == AccelerationSensorMode.ANY_MOTION
@@ -100,7 +100,7 @@ def test_acceleration_sensor(fake_home: Home):
         )
 
 
-def test_tilt_vibration_sensor(fake_home: Home):
+async def test_tilt_vibration_sensor(fake_home: Home):
     d = fake_home.search_device_by_id("3014F7110TILTVIBRATIONSENSOR")
     assert isinstance(d, TiltVibrationSensor)
     assert d.accelerationSensorEventFilterPeriod == 0.5
@@ -118,13 +118,13 @@ def test_tilt_vibration_sensor(fake_home: Home):
         " accelerationSensorTriggered(True)"
     )
     with no_ssl_verification():
-        d.set_acceleration_sensor_event_filter_period(10.0)
-        d.set_acceleration_sensor_mode(AccelerationSensorMode.ANY_MOTION)
-        d.set_acceleration_sensor_sensitivity(
+        await d.set_acceleration_sensor_event_filter_period(10.0)
+        await d.set_acceleration_sensor_mode(AccelerationSensorMode.ANY_MOTION)
+        await d.set_acceleration_sensor_sensitivity(
             AccelerationSensorSensitivity.SENSOR_RANGE_4G
         )
-        d.set_acceleration_sensor_trigger_angle(30)
-        fake_home.get_current_state()
+        await d.set_acceleration_sensor_trigger_angle(30)
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F7110TILTVIBRATIONSENSOR")
         assert d.accelerationSensorEventFilterPeriod == 10.0
         assert d.accelerationSensorMode == AccelerationSensorMode.ANY_MOTION
@@ -135,7 +135,7 @@ def test_tilt_vibration_sensor(fake_home: Home):
         assert d.accelerationSensorTriggerAngle == 30
 
 
-def test_multi_io_box(fake_home: Home):
+async def test_multi_io_box(fake_home: Home):
     d = fake_home.search_device_by_id("3014F711ABCD0ABCD000002")
     assert isinstance(d, MultiIOBox)
     assert d.on is True
@@ -151,8 +151,8 @@ def test_multi_io_box(fake_home: Home):
 
     with no_ssl_verification():
         assert d.functionalChannels[1].on is True
-        d.turn_off(1)
-        fake_home.get_current_state()
+        await d.turn_off(1)
+        await fake_home.get_current_state()
         assert d.functionalChannels[1].on is False
 
 
@@ -208,7 +208,7 @@ def test_full_flush_input_switch(fake_home: Home):
     )
 
 
-def test_shutter_device(fake_home: Home):
+async def test_shutter_device(fake_home: Home):
     d = fake_home.search_device_by_id("3014F7110000000000000001")
     assert isinstance(d, ShutterContact)
     assert d.label == "Fenster"
@@ -244,7 +244,7 @@ def test_shutter_device(fake_home: Home):
     assert d.windowState == WindowState.OPEN
     assert d.lastStatusUpdate is None
     assert (
-            d.set_router_module_enabled(True) is False
+            await d.set_router_module_enabled(True) is False
     )  # Shutter contact won't support this
 
 
@@ -340,7 +340,7 @@ def test_contact_interface_device(fake_home: Home):
     )
 
 
-def test_pluggable_switch_measuring(fake_home: Home):
+async def test_pluggable_switch_measuring(fake_home: Home):
     d = fake_home.search_device_by_id("3014F7110000000000000009")
     assert isinstance(d, SwitchMeasuring)
     assert d.label == "Brunnen"
@@ -379,16 +379,16 @@ def test_pluggable_switch_measuring(fake_home: Home):
             == fake_home_download_configuration()["devices"]["3014F7110000000000000009"]
     )
     with no_ssl_verification():
-        d.turn_on()
-        fake_home.get_current_state()
+        await d.turn_on()
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F7110000000000000009")
         assert d.on is True
-        d.turn_off()
-        fake_home.get_current_state()
+        await d.turn_off()
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F7110000000000000009")
         assert d.on is False
         d.id = "INVALID_ID"
-        result = d.turn_off()
+        result = await d.turn_off()
         assert not result.success
 
 
@@ -427,7 +427,7 @@ def test_smoke_detector(fake_home: Home):
     )
 
 
-def test_wall_mounted_thermostat_pro(fake_home: Home):
+async def test_wall_mounted_thermostat_pro(fake_home: Home):
     d = fake_home.search_device_by_id("3014F7110000000000000022")
     assert isinstance(d, WallMountedThermostatPro)
     assert d.id == "3014F7110000000000000022"
@@ -468,12 +468,12 @@ def test_wall_mounted_thermostat_pro(fake_home: Home):
             == fake_home_download_configuration()["devices"]["3014F7110000000000000022"]
     )
     with no_ssl_verification():
-        d.set_display(ClimateControlDisplay.ACTUAL)
-        fake_home.get_current_state()
+        await d.set_display(ClimateControlDisplay.ACTUAL)
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F7110000000000000022")
         assert d.display == ClimateControlDisplay.ACTUAL
         d.id = "INVALID_ID"
-        result = d.set_display(ClimateControlDisplay.ACTUAL)
+        result = await d.set_display(ClimateControlDisplay.ACTUAL)
         assert not result.success
 
     d = fake_home.search_device_by_id("3014F7110000000000000WTH")
@@ -481,7 +481,7 @@ def test_wall_mounted_thermostat_pro(fake_home: Home):
     assert d.id == "3014F7110000000000000WTH"
 
 
-def test_heating_thermostat(fake_home: Home):
+async def test_heating_thermostat(fake_home: Home):
     d = fake_home.search_device_by_id("3014F7110000000000000015")
     assert isinstance(d, HeatingThermostat)
     assert d.label == "Wohnzimmer-Heizung"
@@ -523,12 +523,12 @@ def test_heating_thermostat(fake_home: Home):
             == fake_home_download_configuration()["devices"]["3014F7110000000000000015"]
     )
     with no_ssl_verification():
-        d.set_operation_lock(False)
-        fake_home.get_current_state()
+        await d.set_operation_lock(False)
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F7110000000000000015")
         assert d.operationLockActive is False
         d.id = "INVALID_ID"
-        result = d.set_operation_lock(True)
+        result = await d.set_operation_lock(True)
         assert not result.success
 
 
@@ -878,7 +878,7 @@ def test_rotary_handle_sensor(fake_home: Home):
     )
 
 
-def test_dimmer(fake_home: Home):
+async def test_dimmer(fake_home: Home):
     d = fake_home.search_device_by_id("3014F711AAAA000000000005")
     assert isinstance(d, BrandDimmer)
     assert d.label == "Schlafzimmerlicht"
@@ -910,56 +910,56 @@ def test_dimmer(fake_home: Home):
         " profileMode(AUTOMATIC) userDesiredProfileMode(AUTOMATIC)"
     )
     with no_ssl_verification():
-        d.set_dim_level(1.0)
-        fake_home.get_current_state()
+        await d.set_dim_level(1.0)
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F711AAAA000000000005")
         assert d.dimLevel == 1.0
-        d.set_dim_level(0.5)
-        fake_home.get_current_state()
+        await d.set_dim_level(0.5)
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F711AAAA000000000005")
         assert d.dimLevel == 0.5
         d.id = "INVALID_ID"
-        result = d.set_dim_level(0.5)
+        result = await d.set_dim_level(0.5)
         assert not result.success
 
 
-def test_basic_device_functions(fake_home: Home):
+async def test_basic_device_functions(fake_home: Home):
     with no_ssl_verification():
         d = fake_home.search_device_by_id("3014F7110000000000000009")
         assert d.permanentlyReachable is True
         assert d.label == "Brunnen"
         assert d.routerModuleEnabled is True
         assert d.energyCounter == 0.4754
-        d.set_label("new label")
-        d.set_router_module_enabled(False)
-        fake_home.get_current_state()
+        await d.set_label("new label")
+        await d.set_router_module_enabled(False)
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F7110000000000000009")
         assert d.label == "new label"
         assert d.routerModuleEnabled is False
-        d.set_label("other label")
-        d.set_router_module_enabled(True)
-        d.reset_energy_counter()
-        fake_home.get_current_state()
+        await d.set_label("other label")
+        await d.set_router_module_enabled(True)
+        await d.reset_energy_counter()
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F7110000000000000009")
         assert d.label == "other label"
         assert d.routerModuleEnabled is True
         assert d.energyCounter == 0
         d2 = fake_home.search_device_by_id("3014F7110000000000000005")
-        d.delete()
-        fake_home.get_current_state()
+        await d.delete()
+        await fake_home.get_current_state()
         dNotFound = fake_home.search_device_by_id("3014F7110000000000000009")
         assert dNotFound is None
         assert d2 is fake_home.search_device_by_id(
             "3014F7110000000000000005"
         )  # make sure that the objects got updated and not completely renewed
         # check if the server is answering properly
-        result = d.set_label("BLa")
+        result = await d.set_label("BLa")
         assert not result.success
-        result = d.delete()
+        result = await d.delete()
         assert not result.success
-        result = d.reset_energy_counter()
+        result = await d.reset_energy_counter()
         assert not result.success
-        result = d.set_router_module_enabled(False)
+        result = await d.set_router_module_enabled(False)
         assert not result.success
 
 
@@ -1010,7 +1010,7 @@ def test_all_devices_implemented(fake_home: Home):
     assert not_implemented
 
 
-def test_water_sensor(fake_home: Home):
+async def test_water_sensor(fake_home: Home):
     with no_ssl_verification():
         d = WaterSensor(fake_home._connection)  # just needed for intellisense
         d = fake_home.search_device_by_id("3014F7110000000000000050")
@@ -1025,18 +1025,18 @@ def test_water_sensor(fake_home: Home):
         assert d.moistureDetected is False
         assert d.sirenWaterAlarmTrigger == WaterAlarmTrigger.WATER_MOISTURE_DETECTION
         assert d.waterlevelDetected is False
-        d.set_acoustic_alarm_timing(AcousticAlarmTiming.SIX_MINUTES)
-        d.set_acoustic_alarm_signal(AcousticAlarmSignal.FREQUENCY_ALTERNATING_LOW_HIGH)
-        d.set_inapp_water_alarm_trigger(WaterAlarmTrigger.MOISTURE_DETECTION)
-        d.set_acoustic_water_alarm_trigger(WaterAlarmTrigger.NO_ALARM)
-        d.set_siren_water_alarm_trigger(WaterAlarmTrigger.NO_ALARM)
+        await d.set_acoustic_alarm_timing(AcousticAlarmTiming.SIX_MINUTES)
+        await d.set_acoustic_alarm_signal(AcousticAlarmSignal.FREQUENCY_ALTERNATING_LOW_HIGH)
+        await d.set_inapp_water_alarm_trigger(WaterAlarmTrigger.MOISTURE_DETECTION)
+        await d.set_acoustic_water_alarm_trigger(WaterAlarmTrigger.NO_ALARM)
+        await d.set_siren_water_alarm_trigger(WaterAlarmTrigger.NO_ALARM)
         assert str(d) == (
             "HmIP-SWD Wassersensor lowBat(False) unreach(False) rssiDeviceValue(-65) rssiPeerValue(None) configPending(False) "
             "dutyCycle(False) incorrectPositioned(True) acousticAlarmSignal(FREQUENCY_RISING) acousticAlarmTiming(ONCE_PER_MINUTE) "
             "acousticWaterAlarmTrigger(WATER_DETECTION) inAppWaterAlarmTrigger(WATER_MOISTURE_DETECTION) moistureDetected(False) "
             "sirenWaterAlarmTrigger(WATER_MOISTURE_DETECTION) waterlevelDetected(False)"
         )
-        fake_home.get_current_state()
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F7110000000000000050")
         assert d.acousticAlarmTiming == AcousticAlarmTiming.SIX_MINUTES
         assert (
@@ -1046,17 +1046,17 @@ def test_water_sensor(fake_home: Home):
         assert d.inAppWaterAlarmTrigger == WaterAlarmTrigger.MOISTURE_DETECTION
         assert d.sirenWaterAlarmTrigger == WaterAlarmTrigger.NO_ALARM
         d.id = "INVALID_ID"
-        result = d.set_acoustic_alarm_timing(AcousticAlarmTiming.SIX_MINUTES)
+        result = await d.set_acoustic_alarm_timing(AcousticAlarmTiming.SIX_MINUTES)
         assert not result.success
-        result = d.set_acoustic_alarm_signal(
+        result = await d.set_acoustic_alarm_signal(
             AcousticAlarmSignal.FREQUENCY_ALTERNATING_LOW_HIGH
         )
         assert not result.success
-        result = d.set_inapp_water_alarm_trigger(WaterAlarmTrigger.MOISTURE_DETECTION)
+        result = await d.set_inapp_water_alarm_trigger(WaterAlarmTrigger.MOISTURE_DETECTION)
         assert not result.success
-        result = d.set_acoustic_water_alarm_trigger(WaterAlarmTrigger.NO_ALARM)
+        result = await d.set_acoustic_water_alarm_trigger(WaterAlarmTrigger.NO_ALARM)
         assert not result.success
-        result = d.set_siren_water_alarm_trigger(WaterAlarmTrigger.NO_ALARM)
+        result = await d.set_siren_water_alarm_trigger(WaterAlarmTrigger.NO_ALARM)
         assert not result.success
 
 
@@ -1142,7 +1142,7 @@ def test_push_button_flat(fake_home: Home):
     assert d.label == "Wandtaster"
 
 
-def test_wired_push_button(fake_home: Home):
+async def test_wired_push_button(fake_home: Home):
     with no_ssl_verification():
         d = fake_home.search_device_by_id("3014F71100000000000WWRC6")
         assert isinstance(d, WiredPushButton)
@@ -1160,16 +1160,16 @@ def test_wired_push_button(fake_home: Home):
                 == "OPTICAL_SIGNAL_CHANNEL unknown Index(10) dimLevel(0.0) on(False) opticalSignalBehaviour(OFF) powerUpSwitchState(PERMANENT_OFF) profileMode(None) simpleRGBColorState(BLACK) userDesiredProfileMode(AUTOMATIC)"
         )
 
-        d.set_dim_level(10, 0.5)
-        fake_home.get_current_state()
+        await d.set_dim_level(10, 0.5)
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F71100000000000WWRC6")
         c = d.functionalChannels[2]
         assert c.dimLevel == 0.5
 
-        d.set_optical_signal(
+        await d.set_optical_signal(
             10, OpticalSignalBehaviour.BILLOW_MIDDLE, RGBColorState.BLUE
         )
-        fake_home.get_current_state()
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F71100000000000WWRC6")
         c = d.functionalChannels[2]
         assert c.dimLevel == 1.01
@@ -1178,16 +1178,16 @@ def test_wired_push_button(fake_home: Home):
 
         c = d.functionalChannels[5]
         assert isinstance(c, OpticalSignalGroupChannel)
-        d.set_dim_level(13, 0.5)
-        fake_home.get_current_state()
+        await d.set_dim_level(13, 0.5)
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F71100000000000WWRC6")
         c = d.functionalChannels[5]
         assert c.dimLevel == 0.5
 
-        d.set_optical_signal(
+        await d.set_optical_signal(
             13, OpticalSignalBehaviour.BILLOW_MIDDLE, RGBColorState.BLUE
         )
-        fake_home.get_current_state()
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F71100000000000WWRC6")
         c = d.functionalChannels[5]
         assert c.dimLevel == 1.01
@@ -1211,7 +1211,7 @@ def test_door_bell_button(fake_home: Home):
     assert c.doublePressTime == 0.0
 
 
-def test_open_collector_8(fake_home: Home):
+async def test_open_collector_8(fake_home: Home):
     with no_ssl_verification():
         d = OpenCollector8Module(fake_home._connection)
         d = fake_home.search_device_by_id("3014F711BBBBBBBBBBBBB18")
@@ -1225,8 +1225,8 @@ def test_open_collector_8(fake_home: Home):
         assert c.index == 8
         assert c.on is True
         assert c.profileMode == "AUTOMATIC"
-        d.turn_off(8)
-        fake_home.get_current_state()
+        await d.turn_off(8)
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F711BBBBBBBBBBBBB18")
         c = d.functionalChannels[8]
         assert c.on is False
@@ -1250,7 +1250,7 @@ def test_passage_detector(fake_home: Home):
         )
 
 
-def test_full_flush_shutter(fake_home: Home):
+async def test_full_flush_shutter(fake_home: Home):
     with no_ssl_verification():
         d = FullFlushShutter(fake_home._connection)
         d = fake_home.search_device_by_id("3014F711ACBCDABCADCA66")
@@ -1272,14 +1272,14 @@ def test_full_flush_shutter(fake_home: Home):
             "HmIP-BROLL BROLL_1 lowBat(None) unreach(False) rssiDeviceValue(-78) rssiPeerValue(-77) configPending(False)"
             " dutyCycle(False) shutterLevel(1.0) topToBottom(24.68) bottomToTop(30.080000000000002)"
         )
-        d.set_shutter_level(0.4)
-        d.set_shutter_stop()  # this will not do anything in the test run
-        fake_home.get_current_state()
+        await d.set_shutter_level(0.4)
+        await d.set_shutter_stop()  # this will not do anything in the test run
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F711ACBCDABCADCA66")
         assert d.shutterLevel == 0.4
 
 
-def test_full_flush_blind(fake_home: Home):
+async def test_full_flush_blind(fake_home: Home):
     with no_ssl_verification():
         d = FullFlushBlind(fake_home._connection)
         d = fake_home.search_device_by_id("3014F711BADCAFE000000001")
@@ -1287,13 +1287,13 @@ def test_full_flush_blind(fake_home: Home):
         assert d.slatsLevel == 1.0
         assert d.blindModeActive is True
         assert d.slatsReferenceTime == 2.0
-        d.set_slats_level(0.4)
-        fake_home.get_current_state()
+        await d.set_slats_level(0.4)
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F711BADCAFE000000001")
         assert d.shutterLevel == 1.0
         assert d.slatsLevel == 0.4
-        d.set_slats_level(0.8, 0.3)
-        fake_home.get_current_state()
+        await d.set_slats_level(0.8, 0.3)
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F711BADCAFE000000001")
         assert d.shutterLevel == 0.3
         assert d.slatsLevel == 0.8
@@ -1338,7 +1338,7 @@ def test_alarm_siren_outdoor(fake_home: Home):
         )
 
 
-def test_floor_terminal_block(fake_home: Home):
+async def test_floor_terminal_block(fake_home: Home):
     with no_ssl_verification():
         d = FloorTerminalBlock6(fake_home._connection)
         d = fake_home.search_device_by_id("3014F7110000000000BBBBB1")
@@ -1378,8 +1378,8 @@ def test_floor_terminal_block(fake_home: Home):
         d = FloorTerminalBlock12(fake_home._connection)
         d = fake_home.search_device_by_id("3014F7110000000000000049")
         assert d.minimumFloorHeatingValvePosition == 0.0
-        d.set_minimum_floor_heating_valve_position(0.2)
-        fake_home.get_current_state()
+        await d.set_minimum_floor_heating_valve_position(0.2)
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F7110000000000000049")
         assert d.minimumFloorHeatingValvePosition == 0.2
         assert str(d) == (
@@ -1393,8 +1393,8 @@ def test_floor_terminal_block(fake_home: Home):
         d = FloorTerminalBlock12(fake_home._connection)
         d = fake_home.search_device_by_id("3014F7110000000000FALMOT")
         assert d.minimumFloorHeatingValvePosition == 0.0
-        d.set_minimum_floor_heating_valve_position(0.2)
-        fake_home.get_current_state()
+        await d.set_minimum_floor_heating_valve_position(0.2)
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F7110000000000FALMOT")
         assert d.minimumFloorHeatingValvePosition == 0.2
         assert str(d) == (
@@ -1414,8 +1414,8 @@ def test_floor_terminal_block(fake_home: Home):
         d = WiredFloorTerminalBlock12(fake_home._connection)
         d = fake_home.search_device_by_id("3014F7110000000000000053")
         assert d.minimumFloorHeatingValvePosition == 0.0
-        d.set_minimum_floor_heating_valve_position(0.2)
-        fake_home.get_current_state()
+        await d.set_minimum_floor_heating_valve_position(0.2)
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F7110000000000000053")
         assert d.minimumFloorHeatingValvePosition == 0.2
         assert str(d) == (
@@ -1433,27 +1433,27 @@ def test_key_remote_control(fake_home: Home):
         assert isinstance(d, KeyRemoteControl4)
 
 
-def test_brand_switch2(fake_home: Home):
+async def test_brand_switch2(fake_home: Home):
     with no_ssl_verification():
         d = fake_home.search_device_by_id("3014F7110000000000000075")
         assert isinstance(d, BrandSwitch2)
 
-        d.turn_on(1)
-        fake_home.get_current_state()
+        await d.turn_on(1)
+        await fake_home.get_current_state()
         assert d.functionalChannels[1].on == True
-        d.turn_off(1)
-        fake_home.get_current_state()
+        await d.turn_off(1)
+        await fake_home.get_current_state()
         assert d.functionalChannels[1].on == False
 
-        d.turn_on(2)
-        fake_home.get_current_state()
+        await d.turn_on(2)
+        await fake_home.get_current_state()
         assert d.functionalChannels[2].on == True
-        d.turn_off(2)
-        fake_home.get_current_state()
+        await d.turn_off(2)
+        await fake_home.get_current_state()
         assert d.functionalChannels[2].on == False
 
 
-def test_brand_switch_notification_light(fake_home: Home):
+async def test_brand_switch_notification_light(fake_home: Home):
     with no_ssl_verification():
         d = BrandSwitchNotificationLight(fake_home._connection)
         d = fake_home.search_device_by_id("3014F711BSL0000000000050")
@@ -1465,11 +1465,11 @@ def test_brand_switch_notification_light(fake_home: Home):
         assert isinstance(c, NotificationLightChannel)
         assert c.simpleRGBColorState == RGBColorState.GREEN
         assert c.dimLevel == 1.0
-        d.set_rgb_dim_level(d.topLightChannelIndex, RGBColorState.BLUE, 0.5)
-        d.set_rgb_dim_level_with_time(
+        await d.set_rgb_dim_level(d.topLightChannelIndex, RGBColorState.BLUE, 0.5)
+        await d.set_rgb_dim_level_with_time(
             d.bottomLightChannelIndex, RGBColorState.YELLOW, 0.7, 10, 20
         )
-        fake_home.get_current_state()
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F711BSL0000000000050")
         c = d.functionalChannels[d.topLightChannelIndex]
         assert isinstance(c, NotificationLightChannel)
@@ -1504,7 +1504,7 @@ def test_light_sensor(fake_home: Home):
         )
 
 
-def test_door_sensor_tm(fake_home: Home):
+async def test_door_sensor_tm(fake_home: Home):
     with no_ssl_verification():
         d = fake_home.search_device_by_id("3014F0000000000000FAF9B4")
         assert d.doorState == DoorState.CLOSED
@@ -1516,8 +1516,8 @@ def test_door_sensor_tm(fake_home: Home):
             "rssiPeerValue(-54) configPending(False) dutyCycle(False) doorState(CLOSED) "
             "on(False) processing(False) ventilationPositionSupported(True)"
         )
-        d.send_door_command(doorCommand=DoorCommand.OPEN)
-        fake_home.get_current_state()
+        await d.send_door_command(doorCommand=DoorCommand.OPEN)
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F0000000000000FAF9B4")
         assert d.doorState == DoorState.OPEN
 
@@ -1532,7 +1532,7 @@ def test_door_bell_contact_interface(fake_home: Home):
     assert c.channelRole == "DOOR_BELL_INPUT"
 
 
-def test_hoermann_drives_module(fake_home: Home):
+async def test_hoermann_drives_module(fake_home: Home):
     with no_ssl_verification():
         d = fake_home.search_device_by_id("3014F7110000000HOERMANN")
         assert d.doorState == DoorState.CLOSED
@@ -1545,7 +1545,7 @@ def test_hoermann_drives_module(fake_home: Home):
             "on(False) processing(False) ventilationPositionSupported(True)"
         )
         d.send_door_command(doorCommand=DoorCommand.CLOSE)
-        fake_home.get_current_state()
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F7110000000HOERMANN")
         assert d.doorState == DoorState.CLOSED
 
@@ -1593,7 +1593,7 @@ def test_wired_din_rail_access_point(fake_home: Home):
         assert isinstance(d, WiredDinRailAccessPoint)
 
 
-def test_blind_module(fake_home: Home):
+async def test_blind_module(fake_home: Home):
     with no_ssl_verification():
         d = fake_home.search_device_by_id("3014F71100BLIND_MODULE00")
         assert str(d) == (
@@ -1611,13 +1611,13 @@ def test_blind_module(fake_home: Home):
             "shadingPositionAdjustmentClientId(None)"
         )
 
-        d.set_primary_shading_level(5)
-        fake_home.get_current_state()
+        await d.set_primary_shading_level(5)
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F71100BLIND_MODULE00")
         assert d.primaryShadingLevel == 5
 
-        d.set_secondary_shading_level(0.5, 1.0)
-        fake_home.get_current_state()
+        await d.set_secondary_shading_level(0.5, 1.0)
+        await fake_home.get_current_state()
         d = fake_home.search_device_by_id("3014F71100BLIND_MODULE00")
         assert d.primaryShadingLevel == 0.5
         assert d.secondaryShadingLevel == 1.0
@@ -1708,7 +1708,7 @@ def test_wall_mounted_garage_door_controller(fake_home: Home):
         )
 
 
-def test_door_lock_drive(fake_home: Home):
+async def test_door_lock_drive(fake_home: Home):
     with no_ssl_verification():
         d = fake_home.search_device_by_id("3014F7110000000000000DLD")
         assert isinstance(d, DoorLockDrive)
@@ -1716,10 +1716,10 @@ def test_door_lock_drive(fake_home: Home):
         assert d.motorState == MotorState.STOPPED
         assert d.door_lock_channel == 1
 
-        result = d.set_lock_state(LockState.OPEN)
+        result = await d.set_lock_state(LockState.OPEN)
 
 
-def test_door_lock_drive2(fake_home: Home):
+async def test_door_lock_drive2(fake_home: Home):
     with no_ssl_verification():
         d = fake_home.search_device_by_id("3014F711000000000000DLD2")
         assert isinstance(d, DoorLockDrive)
@@ -1727,10 +1727,10 @@ def test_door_lock_drive2(fake_home: Home):
         assert d.motorState == MotorState.STOPPED
         assert d.door_lock_channel == 1
 
-        result = d.set_lock_state(LockState.OPEN)
+        result = await d.set_lock_state(LockState.OPEN)
 
 
-def test_door_lock_drive3(fake_home: Home):
+async def test_door_lock_drive3(fake_home: Home):
     with no_ssl_verification():
         d = fake_home.search_device_by_id("3014F711000000000000DLD3")
         assert isinstance(d, DoorLockDrive)
@@ -1738,7 +1738,7 @@ def test_door_lock_drive3(fake_home: Home):
         assert d.motorState == MotorState.STOPPED
         assert d.door_lock_channel == 1
 
-        result = d.set_lock_state(LockState.OPEN)
+        result = await d.set_lock_state(LockState.OPEN)
 
 
 def test_door_lock_sensor(fake_home: Home):
@@ -1751,17 +1751,17 @@ def test_door_lock_sensor(fake_home: Home):
         assert d.lockState == None
 
 
-def test_wired_din_rail_switch4(fake_home: Home):
+async def test_wired_din_rail_switch4(fake_home: Home):
     # with no_ssl_verification():
     d = fake_home.search_device_by_id("3014F711000WIREDSWITCH4")
     assert isinstance(d, WiredSwitch4)
 
     for i in range(1, 4):
-        d.turn_on(i)
-        fake_home.get_current_state()
+        await d.turn_on(i)
+        await fake_home.get_current_state()
         assert d.functionalChannels[i].on == True
-        d.turn_off(i)
-        fake_home.get_current_state()
+        await d.turn_off(i)
+        await fake_home.get_current_state()
         assert d.functionalChannels[i].on == False
 
 

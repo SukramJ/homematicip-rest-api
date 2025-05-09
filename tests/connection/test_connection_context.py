@@ -16,7 +16,7 @@ async def test_build_context_with_client_session(mocker):
     mock_client = AsyncMock(spec=httpx.AsyncClient)
     mock_client.post.return_value = response
 
-    context = await ConnectionContextBuilder.build_context_async(
+    context = await ConnectionContextBuilder.build_context(
         "access_point_id",
         lookup_url,
         httpx_client_session=mock_client
@@ -36,7 +36,7 @@ async def test_build_context_without_client_session(mocker):
     patched = mocker.patch("homematicip.connection.connection_context.httpx.AsyncClient.post")
     patched.return_value = response
 
-    context = await ConnectionContextBuilder.build_context_async("access_point_id", "https://example.com/lookup")
+    context = await ConnectionContextBuilder.build_context("access_point_id", "https://example.com/lookup")
 
     patched.assert_called_once()
     assert context.rest_url == "https://example.com/rest"

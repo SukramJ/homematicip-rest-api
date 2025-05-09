@@ -13,7 +13,7 @@ async def test_send_single_request(mocker):
     context = ConnectionContext(rest_url="http://asdf")
     conn = RateLimitedRestConnection(context, 1, 1)
 
-    result = await conn.async_post("url", {"a": "b"}, {"c": "d"})
+    result = await conn.post("url", {"a": "b"}, {"c": "d"})
 
     assert patched.called
     assert patched.call_args[0][0] == "http://asdf/hmip/url"
@@ -30,8 +30,8 @@ async def test_send_and_wait_requests(mocker):
     context = ConnectionContext(rest_url="http://asdf")
     conn = RateLimitedRestConnection(context, 1, 1)
 
-    await conn.async_post("url", {"a": "b"}, {"c": "d"})
-    await conn.async_post("url", {"a": "b"}, {"c": "d"})
-    await conn.async_post("url", {"a": "b"}, {"c": "d"})
+    await conn.post("url", {"a": "b"}, {"c": "d"})
+    await conn.post("url", {"a": "b"}, {"c": "d"})
+    await conn.post("url", {"a": "b"}, {"c": "d"})
 
     assert patched.call_count == 3

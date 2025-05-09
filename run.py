@@ -4,7 +4,7 @@ import sys
 import time
 
 import homematicip
-from homematicip.async_home import AsyncHome
+from homematicip.home import Home
 
 def setup_config() -> homematicip.HmipConfig:
     """Initialize configuration."""
@@ -13,26 +13,26 @@ def setup_config() -> homematicip.HmipConfig:
     return _config
 
 
-async def get_home(config: homematicip.HmipConfig) -> AsyncHome:
+async def get_home(config: homematicip.HmipConfig) -> Home:
     """Initialize home instance."""
-    home = AsyncHome()
-    await home.init_async(config.access_point, config.auth_token)
+    home = Home()
+    await home.init(config.access_point, config.auth_token)
     return home
 
-async def run_forever_task(home: AsyncHome):
+async def run_forever_task(home: Home):
     """Task to run forever."""
     await home.enable_events(print_output)
 
 async def print_output(message):
     print(message)
 
-async def close_after_15_seconds(home: AsyncHome):
+async def close_after_15_seconds(home: Home):
     for i in range(15):
         print(f"WebSocket is connected: {home.websocket_is_connected()}")
         print(f"Closing in {15-i} seconds")
         await asyncio.sleep(1)
 
-    await home.disable_events_async()
+    await home.disable_events()
 
 
 async def main():
@@ -57,19 +57,19 @@ async def main():
         # task = asyncio.create_task(close_after_15_seconds(home))
         #
         # await asyncio.gather(task_events, task)
-        await home.get_current_state_async()
+        await home.get_current_state()
         asyncio.create_task(home.enable_events())
 
         for i in range(10):
             print(f"WebSocket is connected: {home.websocket_is_connected()}")
             print(f"Closing in {10-i} seconds")
             await asyncio.sleep(1)
-        await home.disable_events_async()
+        await home.disable_events()
         print(home.websocket_is_connected())
     except KeyboardInterrupt:
         print("Client wird durch Benutzer beendet.")
     finally:
-        await home.disable_events_async()
+        await home.disable_events()
         print("WebSocket-Client beendet.")
 
 

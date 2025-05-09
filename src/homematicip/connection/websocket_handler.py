@@ -91,7 +91,7 @@ class WebSocketHandler:
         logging.info("Signal received, closing websocket.")
         await websocket.close()
 
-    async def stop_listening_async(self):
+    async def stop_listening(self):
         LOGGER.info("Stopping WebSocket connection.")
         self._stop_event.set()
         if self._websocket:

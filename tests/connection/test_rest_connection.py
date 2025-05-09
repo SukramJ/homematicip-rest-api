@@ -29,7 +29,7 @@ def test_conn_update_connection_context(mocker):
     assert conn._context == context2
 
 @pytest.mark.asyncio
-async def test_conn_async_post(mocker):
+async def test_conn_post(mocker):
     response = mocker.Mock(spec=httpx.Response)
     response.status_code = 200
     patched = mocker.patch("homematicip.connection.rest_connection.httpx.AsyncClient.post")
@@ -38,7 +38,7 @@ async def test_conn_async_post(mocker):
     context = ConnectionContext(rest_url="http://asdf")
     conn = RestConnection(context)
 
-    result = await conn.async_post("url", {"a": "b"}, {"c": "d"})
+    result = await conn.post("url", {"a": "b"}, {"c": "d"})
 
     assert patched.called
     assert patched.call_args[0][0] == "http://asdf/hmip/url"
@@ -47,7 +47,7 @@ async def test_conn_async_post(mocker):
 
 
 @pytest.mark.asyncio
-async def test_conn_async_post_throttle(mocker):
+async def test_conn_post_throttle(mocker):
     response = mocker.Mock(spec=httpx.Response)
     response.status_code = 429
     patched = mocker.patch("homematicip.connection.rest_connection.httpx.AsyncClient.post")
@@ -57,10 +57,10 @@ async def test_conn_async_post_throttle(mocker):
     conn = RestConnection(context)
 
     with pytest.raises(Exception):
-        await conn.async_post("url", {"a": "b"}, {"c": "d"})
+        await conn.post("url", {"a": "b"}, {"c": "d"})
 
 @pytest.mark.asyncio
-async def test_conn_async_post_with_httpx_client_session(mocker):
+async def test_conn_post_with_httpx_client_session(mocker):
     response = mocker.Mock(spec=httpx.Response)
     response.status_code = 200
 
@@ -70,7 +70,7 @@ async def test_conn_async_post_with_httpx_client_session(mocker):
     context = ConnectionContext(rest_url="http://asdf")
     conn = RestConnection(context, httpx_client_session=mock_client)
 
-    result = await conn.async_post("url", {"a": "b"}, {"c": "d"})
+    result = await conn.post("url", {"a": "b"}, {"c": "d"})
 
     assert mock_client.post.called
     assert mock_client.post.call_args[0][0] == "http://asdf/hmip/url"

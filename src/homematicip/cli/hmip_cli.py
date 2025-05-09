@@ -12,7 +12,7 @@ from logging.handlers import TimedRotatingFileHandler
 from operator import attrgetter
 
 import homematicip
-from homematicip.async_home import AsyncHome
+from homematicip.home import Home
 from homematicip.base.enums import CliActions, ClimateControlDisplay, LockState
 from homematicip.base.functionalChannels import FunctionalChannel
 from homematicip.base.helpers import handle_config
@@ -24,7 +24,7 @@ from homematicip.rule import SimpleRule
 logger = logging.getLogger("hmip_cli")
 
 
-async def main_async(args=None):
+async def main(args=None):
     if args is None:
         args = sys.argv[1:]
 
@@ -84,10 +84,10 @@ def setup_config(args) -> homematicip.HmipConfig:
     return _config
 
 
-async def get_home(config: homematicip.HmipConfig) -> AsyncHome:
+async def get_home(config: homematicip.HmipConfig) -> Home:
     """Initialize home instance."""
-    home = AsyncHome()
-    await home.init_async(config.access_point, config.auth_token)
+    home = Home()
+    await home.init(config.access_point, config.auth_token)
     return home
 
 
@@ -122,7 +122,7 @@ def setup_logger(default_debug_level: int, argument_debug_level: int, log_file: 
         logging.getLogger(logger_name).setLevel(logging.WARNING)
 
 
-async def run(config: homematicip.HmipConfig, home: AsyncHome, logger: logging.Logger, args):
+async def run(config: homematicip.HmipConfig, home: Home, logger: logging.Logger, args):
     """Execution of cli commands with parsed args."""
     command_entered = False
     if args.server_config:
@@ -131,17 +131,17 @@ async def run(config: homematicip.HmipConfig, home: AsyncHome, logger: logging.L
         )
         global server_config
         server_config = args.server_config
-        home.download_configuration_async = fake_download_configuration
+        home.download_configuration = fake_download_configuration
 
     if args.dump_config:
         command_entered = True
-        json_state = await home.download_configuration_async()
+        json_state = await home.download_configuration()
 
         output = handle_config(json_state, args.anonymize)
         if output:
             print(output)
 
-    if not await home.get_current_state_async():
+    if not await home.get_current_state():
         return
 
     if args.list_devices:
@@ -176,22 +176,22 @@ async def run(config: homematicip.HmipConfig, home: AsyncHome, logger: logging.L
     if args.protectionmode:
         command_entered = True
         if args.protectionmode == "presence":
-            await home.set_security_zones_activation_async(False, True)
+            await home.set_security_zones_activation(False, True)
         elif args.protectionmode == "absence":
-            await home.set_security_zones_activation_async(True, True)
+            await home.set_security_zones_activation(True, True)
         elif args.protectionmode == "disable":
-            await home.set_security_zones_activation_async(False, False)
+            await home.set_security_zones_activation(False, False)
 
     if args.new_pin:
         command_entered = True
-        await home.set_pin_async(args.new_pin, args.old_pin)
+        await home.set_pin(args.new_pin, args.old_pin)
     if args.delete_pin:
         command_entered = True
-        await home.set_pin_async(None, args.old_pin)
+        await home.set_pin(None, args.old_pin)
 
     if args.list_security_journal:
         command_entered = True
-        journal = await home.get_security_journal_async()
+        journal = await home.get_security_journal()
         for entry in journal:
             print(entry)
 
@@ -269,7 +269,7 @@ async def run(config: homematicip.HmipConfig, home: AsyncHome, logger: logging.L
 
         for device in devices:
             if args.device_new_label:
-                await device.set_label_async(args.device_new_label)
+                await device.set_label(args.device_new_label)
                 command_entered = True
 
             if args.device_switch_state is not None:
@@ -277,7 +277,7 @@ async def run(config: homematicip.HmipConfig, home: AsyncHome, logger: logging.L
                     device,
                     args,
                     CliActions.SET_SWITCH_STATE,
-                    "async_set_switch_state",
+                    "set_switch_state",
                     args.device_switch_state,
                 )
                 command_entered = True
@@ -287,7 +287,7 @@ async def run(config: homematicip.HmipConfig, home: AsyncHome, logger: logging.L
                     device,
                     args,
                     CliActions.SET_DIM_LEVEL,
-                    "async_set_dim_level",
+                    "set_dim_level",
                     args.device_dim_level,
                 )
                 command_entered = True
@@ -303,7 +303,7 @@ async def run(config: homematicip.HmipConfig, home: AsyncHome, logger: logging.L
                         device,
                         args,
                         CliActions.SET_LOCK_STATE,
-                        "async_set_lock_state",
+                        "set_lock_state",
                         target_lock_state,
                         pin,
                     )
@@ -314,7 +314,7 @@ async def run(config: homematicip.HmipConfig, home: AsyncHome, logger: logging.L
                     device,
                     args,
                     CliActions.TOGGLE_GARAGE_DOOR,
-                    "async_send_start_impulse",
+                    "send_start_impulse",
                 )
                 command_entered = True
 
@@ -323,7 +323,7 @@ async def run(config: homematicip.HmipConfig, home: AsyncHome, logger: logging.L
                     device,
                     args,
                     CliActions.SEND_DOOR_COMMAND,
-                    "async_send_door_command",
+                    "send_door_command",
                     args.device_send_door_command,
                 )
                 command_entered = True
@@ -333,7 +333,7 @@ async def run(config: homematicip.HmipConfig, home: AsyncHome, logger: logging.L
                     device,
                     args,
                     CliActions.SET_SHUTTER_LEVEL,
-                    "async_set_shutter_level",
+                    "set_shutter_level",
                     args.device_shutter_level,
                 )
                 command_entered = True
@@ -349,7 +349,7 @@ async def run(config: homematicip.HmipConfig, home: AsyncHome, logger: logging.L
                     device,
                     args,
                     CliActions.SET_SLATS_LEVEL,
-                    "async_set_slats_level",
+                    "set_slats_level",
                     slats_level,
                     shutter_level,
                 )
@@ -360,7 +360,7 @@ async def run(config: homematicip.HmipConfig, home: AsyncHome, logger: logging.L
                     device,
                     args,
                     CliActions.SET_SHUTTER_STOP,
-                    "async_set_shutter_stop",
+                    "set_shutter_stop",
                 )
                 command_entered = True
 
@@ -399,7 +399,7 @@ async def run(config: homematicip.HmipConfig, home: AsyncHome, logger: logging.L
                     device,
                     args,
                     CliActions.RESET_ENERGY_COUNTER,
-                    "async_reset_energy_counter",
+                    "reset_energy_counter",
                 )
                 command_entered = True
 
@@ -459,23 +459,23 @@ async def run(config: homematicip.HmipConfig, home: AsyncHome, logger: logging.L
             else:
                 internal.append(device)
         if not error:
-            await home.set_zones_device_assignment_async(internal, external)
+            await home.set_zones_device_assignment(internal, external)
 
     if args.activate_absence:
         command_entered = True
-        await home.activate_absence_with_duration_async(args.activate_absence)
+        await home.activate_absence_with_duration(args.activate_absence)
 
     if args.activate_absence_permanent:
         command_entered = True
-        await home.activate_absence_permanent_async()
+        await home.activate_absence_permanent()
 
     if args.deactivate_absence:
         command_entered = True
-        await home.deactivate_absence_async()
+        await home.deactivate_absence()
 
     if args.inclusion_device_id:
         command_entered = True
-        await home.start_inclusion_async(args.inclusion_device_id)
+        await home.start_inclusion(args.inclusion_device_id)
 
     if args.group:
         command_entered = False
@@ -490,7 +490,7 @@ async def run(config: homematicip.HmipConfig, home: AsyncHome, logger: logging.L
 
         if args.device_switch_state is not None:
             if isinstance(group, ExtendedLinkedSwitchingGroup):
-                await group.set_switch_state_async(args.device_switch_state)
+                await group.set_switch_state(args.device_switch_state)
 
             command_entered = True
 
@@ -504,11 +504,11 @@ async def run(config: homematicip.HmipConfig, home: AsyncHome, logger: logging.L
 
         if args.group_shutter_level:
             command_entered = True
-            await group.set_shutter_level_async(args.group_shutter_level)
+            await group.set_shutter_level(args.group_shutter_level)
 
         if args.group_shutter_stop:
             command_entered = True
-            await group.set_shutter_stop_async()
+            await group.set_shutter_stop()
 
         if args.group_slats_level:
             slats_level = args.group_slats_level[0]
@@ -517,12 +517,12 @@ async def run(config: homematicip.HmipConfig, home: AsyncHome, logger: logging.L
             )
 
             command_entered = True
-            await group.set_slats_level_async(slats_level, shutter_level)
+            await group.set_slats_level(slats_level, shutter_level)
 
         if args.group_set_point_temperature:
             command_entered = True
             if isinstance(group, HeatingGroup):
-                await group.set_point_temperature_async(args.group_set_point_temperature)
+                await group.set_point_temperature(args.group_set_point_temperature)
             else:
                 logger.error("Group %s isn't a HEATING group", g.id)
 
@@ -534,21 +534,21 @@ async def run(config: homematicip.HmipConfig, home: AsyncHome, logger: logging.L
                     if p.name == args.group_activate_profile:
                         index = p.index
                         break
-                await group.set_active_profile_async(index)
+                await group.set_active_profile(index)
             else:
                 logger.error("Group %s isn't a HEATING group", g.id)
 
         if args.group_boost is not None:
             command_entered = True
             if isinstance(group, HeatingGroup):
-                await group.set_boost_async(args.group_boost)
+                await group.set_boost(args.group_boost)
             else:
                 logger.error("Group %s isn't a HEATING group", g.id)
 
         if args.group_boost_duration is not None:
             command_entered = True
             if isinstance(group, HeatingGroup):
-                await group.set_boost_duration_async(args.group_boost_duration)
+                await group.set_boost_duration(args.group_boost_duration)
             else:
                 logger.error("Group %s isn't a HEATING group", g.id)
 
@@ -579,7 +579,7 @@ async def run(config: homematicip.HmipConfig, home: AsyncHome, logger: logging.L
         for rule in rules:
             if args.rule_activation is not None:
                 if isinstance(rule, SimpleRule):
-                    await rule.set_rule_enabled_state_async(args.rule_activation)
+                    await rule.set_rule_enabled_state(args.rule_activation)
                     command_entered = True
                 else:
                     logger.error(
@@ -597,10 +597,10 @@ async def run(config: homematicip.HmipConfig, home: AsyncHome, logger: logging.L
             print("Listening for events. Press Ctrl+c to stop.")
             await home.enable_events()
         except KeyboardInterrupt:
-            await home.disable_events_async()
+            await home.disable_events()
         finally:
             logger.info("Stopping websocket connection.")
-            await home.disable_events_async()
+            await home.disable_events()
             logger.info("Stopped listening for events.")
             print("Stopped listening for events.")
 
@@ -1134,7 +1134,7 @@ async def fake_download_configuration():
 
 
 def main():
-    asyncio.run(main_async())
+    asyncio.run(main())
 
 if __name__ == "__main__":
     main()

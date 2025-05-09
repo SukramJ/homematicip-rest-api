@@ -72,7 +72,7 @@ class RestConnection:
         """If headers must be manipulated use this method to get the current headers."""
         return self._headers
 
-    async def async_post(self, url: str, data: dict | None = None, custom_header: dict | None = None) -> RestResult:
+    async def post(self, url: str, data: dict | None = None, custom_header: dict | None = None) -> RestResult:
         """Send an async post request to cloud with json data. Returns a json result.
         @param url: The path of the url to send the request to
         @param data: The data to send as json
@@ -86,7 +86,7 @@ class RestConnection:
                 header = custom_header
 
             LOGGER.debug(f"Sending post request to url {full_url}. Data is: {data}")
-            r = await self._execute_request_async(full_url, data, header)
+            r = await self._execute_request(full_url, data, header)
             LOGGER.debug(f"Got response {r.status_code}.")
 
             if r.status_code == THROTTLE_STATUS_CODE:
@@ -113,7 +113,7 @@ class RestConnection:
                 LOGGER.error(f"Response: {repr(exc.response)}")
             return RestResult(status=exc.response.status_code, exception=exc, text=exc.response.text)
 
-    async def _execute_request_async(self, url: str, data: dict | None = None, header: dict | None = None):
+    async def _execute_request(self, url: str, data: dict | None = None, header: dict | None = None):
         """Execute a request async. Uses the httpx client session if available.
         @param url: The path of the url to send the request to
         @param data: The data to send as json

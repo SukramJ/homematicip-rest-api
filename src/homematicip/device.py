@@ -222,27 +222,27 @@ class Device(BaseDevice):
     def __str__(self):
         return f"{self.modelType} {self.label} {self.str_from_attr_map()}"
 
-    async def set_label_async(self, label):
+    async def set_label(self, label):
         data = {"deviceId": self.id, "label": label}
-        return await self._rest_call_async("device/setDeviceLabel", data)
+        return await self._rest_call("device/setDeviceLabel", data)
 
-    async def is_update_applicable_async(self):
+    async def is_update_applicable(self):
         data = {"deviceId": self.id}
-        return await self._rest_call_async("device/isUpdateApplicable", data)
+        return await self._rest_call("device/isUpdateApplicable", data)
 
-    async def authorizeUpdate_async(self):
+    async def authorizeUpdate(self):
         data = {"deviceId": self.id}
-        return await self._rest_call_async("device/authorizeUpdate", data)
+        return await self._rest_call("device/authorizeUpdate", data)
 
-    async def delete_async(self):
+    async def delete(self):
         data = {"deviceId": self.id}
-        return await self._rest_call_async("device/deleteDevice", data)
+        return await self._rest_call("device/deleteDevice", data)
 
-    async def set_router_module_enabled_async(self, enabled=True):
+    async def set_router_module_enabled(self, enabled=True):
         if not self.routerModuleSupported:
             return False
         data = {"deviceId": self.id, "channelIndex": 0, "routerModuleEnabled": enabled}
-        return await self._rest_call_async(
+        return await self._rest_call(
             "device/configuration/setRouterModuleEnabled", data
         )
 
@@ -339,9 +339,9 @@ class OperationLockableDevice(Device):
         if c:
             self.set_attr_from_dict("operationLockActive", c)
 
-    async def set_operation_lock_async(self, operationLock=True):
+    async def set_operation_lock(self, operationLock=True):
         data = {"channelIndex": 0, "deviceId": self.id, "operationLock": operationLock}
-        return await self._rest_call_async("device/configuration/setOperationLock", data)
+        return await self._rest_call("device/configuration/setOperationLock", data)
 
 
 class HeatingThermostat(OperationLockableDevice):
@@ -617,9 +617,9 @@ class TemperatureHumiditySensorDisplay(Device):
             self.setPointTemperature = c["setPointTemperature"]
             self.vaporAmount = c["vaporAmount"]
 
-    async def set_display_async(self, display: ClimateControlDisplay = ClimateControlDisplay.ACTUAL):
+    async def set_display(self, display: ClimateControlDisplay = ClimateControlDisplay.ACTUAL):
         data = {"channelIndex": 1, "deviceId": self.id, "display": str(display)}
-        return await self._rest_call_async(
+        return await self._rest_call(
             "device/configuration/setClimateControlDisplay", data
         )
 
@@ -802,7 +802,7 @@ class FloorTerminalBlock12(Device):
             self.set_attr_from_dict("valveProtectionDuration", c)
             self.set_attr_from_dict("valveProtectionSwitchingInterval", c)
 
-    async def set_minimum_floor_heating_valve_position_async(self, minimumFloorHeatingValvePosition: float):
+    async def set_minimum_floor_heating_valve_position(self, minimumFloorHeatingValvePosition: float):
         """sets the minimum floot heating valve position
 
         Args:
@@ -816,7 +816,7 @@ class FloorTerminalBlock12(Device):
             "deviceId": self.id,
             "minimumFloorHeatingValvePosition": minimumFloorHeatingValvePosition,
         }
-        return await self._rest_call_async(
+        return await self._rest_call(
             "device/configuration/setMinimumFloorHeatingValvePosition",
             body=data,
         )
@@ -848,15 +848,15 @@ class Switch(Device):
             super().__str__(), self.on, self.profileMode, self.userDesiredProfileMode
         )
 
-    async def set_switch_state_async(self, on=True, channelIndex=1):
+    async def set_switch_state(self, on=True, channelIndex=1):
         data = {"channelIndex": channelIndex, "deviceId": self.id, "on": on}
-        return await self._rest_call_async("device/control/setSwitchState", body=data)
+        return await self._rest_call("device/control/setSwitchState", body=data)
 
-    async def turn_on_async(self, channelIndex=1):
-        return await self.set_switch_state_async(True, channelIndex)
+    async def turn_on(self, channelIndex=1):
+        return await self.set_switch_state(True, channelIndex)
 
-    async def turn_off_async(self, channelIndex=1):
-        return await self.set_switch_state_async(False, channelIndex)
+    async def turn_off(self, channelIndex=1):
+        return await self.set_switch_state(False, channelIndex)
 
 
 class CarbonDioxideSensor(Switch):
@@ -912,9 +912,9 @@ class SwitchMeasuring(Switch):
         self.currentPowerConsumption = 0
         self.measuredAttributes: dict[str, dict[str, bool]] = {}
 
-    async def reset_energy_counter_async(self):
+    async def reset_energy_counter(self):
         data = {"channelIndex": 1, "deviceId": self.id}
-        return await self._rest_call_async("device/control/resetEnergyCounter", body=data)
+        return await self._rest_call("device/control/resetEnergyCounter", body=data)
 
     def from_json(self, js):
         super().from_json(js)
@@ -981,7 +981,7 @@ class BrandSwitchNotificationLight(Switch):
             )
         )
 
-    async def set_rgb_dim_level_async(self, channelIndex: int, rgb: RGBColorState, dimLevel: float):
+    async def set_rgb_dim_level(self, channelIndex: int, rgb: RGBColorState, dimLevel: float):
         """sets the color and dimlevel of the lamp
 
         Args:
@@ -998,11 +998,11 @@ class BrandSwitchNotificationLight(Switch):
             "simpleRGBColorState": rgb,
             "dimLevel": dimLevel,
         }
-        return await self._rest_call_async(
+        return await self._rest_call(
             "device/control/setSimpleRGBColorDimLevel", body=data
         )
 
-    async def set_rgb_dim_level_with_time_async(
+    async def set_rgb_dim_level_with_time(
             self,
             channelIndex: int,
             rgb: RGBColorState,
@@ -1029,7 +1029,7 @@ class BrandSwitchNotificationLight(Switch):
             "onTime": onTime,
             "rampTime": rampTime,
         }
-        return await self._rest_call_async(
+        return await self._rest_call(
             "device/control/setSimpleRGBColorDimLevelWithTime", body=data
         )
 
@@ -1263,7 +1263,7 @@ class KeyRemoteControlAlarm(Device):
 class Shutter(Device):
     """Base class for shutter devices"""
 
-    async def set_shutter_level_async(self, level=0.0, channelIndex=1):
+    async def set_shutter_level(self, level=0.0, channelIndex=1):
         """sets the shutter level
 
         Args:
@@ -1277,9 +1277,9 @@ class Shutter(Device):
             "deviceId": self.id,
             "shutterLevel": level,
         }
-        return await self._rest_call_async("device/control/setShutterLevel", body=data)
+        return await self._rest_call("device/control/setShutterLevel", body=data)
 
-    async def set_shutter_stop_async(self, channelIndex=1):
+    async def set_shutter_stop(self, channelIndex=1):
         """stops the current shutter operation
 
         Args:
@@ -1288,13 +1288,13 @@ class Shutter(Device):
             the result of the _restCall
         """
         data = {"channelIndex": channelIndex, "deviceId": self.id}
-        return await self._rest_call_async("device/control/stop", body=data)
+        return await self._rest_call("device/control/stop", body=data)
 
 
 class Blind(Shutter):
     """Base class for blind devices"""
 
-    async def set_slats_level_async(self, slatsLevel=0.0, shutterLevel=None, channelIndex=1):
+    async def set_slats_level(self, slatsLevel=0.0, shutterLevel=None, channelIndex=1):
         """sets the slats and shutter level
 
         Args:
@@ -1313,7 +1313,7 @@ class Blind(Shutter):
             "slatsLevel": slatsLevel,
             "shutterLevel": shutterLevel,
         }
-        return await self._rest_call_async("device/control/setSlatsLevel", data)
+        return await self._rest_call("device/control/setSlatsLevel", data)
 
 
 class FullFlushShutter(Shutter):
@@ -1423,7 +1423,7 @@ class WiredDinRailBlind4(Blind):
 class WiredPushButton(PushButton):
     """HmIPW-WRC6 and HmIPW-WRC2"""
 
-    async def set_optical_signal_async(
+    async def set_optical_signal(
             self,
             channelIndex,
             opticalSignalBehaviour: OpticalSignalBehaviour,
@@ -1449,9 +1449,9 @@ class WiredPushButton(PushButton):
             "opticalSignalBehaviour": opticalSignalBehaviour,
             "simpleRGBColorState": rgb,
         }
-        return await self._rest_call_async("device/control/setOpticalSignal", body=data)
+        return await self._rest_call("device/control/setOpticalSignal", body=data)
 
-    async def set_dim_level_async(self, channelIndex, dimLevel):
+    async def set_dim_level(self, channelIndex, dimLevel):
         """sets the signal type for the leds
         Args:
             channelIndex(int): Channel which is affected
@@ -1462,17 +1462,17 @@ class WiredPushButton(PushButton):
 
         """
         data = {"channelIndex": channelIndex, "deviceId": self.id, "dimLevel": dimLevel}
-        return await self._rest_call_async("device/control/setDimLevel", body=data)
+        return await self._rest_call("device/control/setDimLevel", body=data)
 
-    async def set_switch_state_async(self, on, channelIndex):
+    async def set_switch_state(self, on, channelIndex):
         data = {"channelIndex": channelIndex, "deviceId": self.id, "on": on}
-        return await self._rest_call_async("device/control/setSwitchState", body=data)
+        return await self._rest_call("device/control/setSwitchState", body=data)
 
-    async def turn_on_async(self, channelIndex):
-        return await self.set_switch_state_async(True, channelIndex)
+    async def turn_on(self, channelIndex):
+        return await self.set_switch_state(True, channelIndex)
 
-    async def turn_off_async(self, channelIndex):
-        return await self.set_switch_state_async(False, channelIndex)
+    async def turn_off(self, channelIndex):
+        return await self.set_switch_state(False, channelIndex)
 
 
 class BlindModule(Device):
@@ -1538,15 +1538,15 @@ class BlindModule(Device):
             self.set_attr_from_dict("shadingPositionAdjustmentActive", c)
             self.set_attr_from_dict("shadingPositionAdjustmentClientId", c)
 
-    async def set_primary_shading_level_async(self, primaryShadingLevel: float):
+    async def set_primary_shading_level(self, primaryShadingLevel: float):
         data = {
             "channelIndex": 1,
             "deviceId": self.id,
             "primaryShadingLevel": primaryShadingLevel,
         }
-        return await self._rest_call_async("device/control/setPrimaryShadingLevel", data)
+        return await self._rest_call("device/control/setPrimaryShadingLevel", data)
 
-    async def set_secondary_shading_level_async(
+    async def set_secondary_shading_level(
             self, primaryShadingLevel: float, secondaryShadingLevel: float):
         data = {
             "channelIndex": 1,
@@ -1554,17 +1554,17 @@ class BlindModule(Device):
             "primaryShadingLevel": primaryShadingLevel,
             "secondaryShadingLevel": secondaryShadingLevel,
         }
-        return await self._rest_call_async(
+        return await self._rest_call(
             "device/control/setSecondaryShadingLevel", data
         )
 
-    async def stop_async(self):
+    async def stop(self):
         """stops the current operation
         Returns:
             the result of the _restCall
         """
         data = {"channelIndex": 1, "deviceId": self.id}
-        return await self._rest_call_async("device/control/stop", body=data)
+        return await self._rest_call("device/control/stop", body=data)
 
 
 class LightSensor(Device):
@@ -1625,9 +1625,9 @@ class Dimmer(Device):
             self.userDesiredProfileMode,
         )
 
-    async def set_dim_level_async(self, dimLevel=0.0, channelIndex=1):
+    async def set_dim_level(self, dimLevel=0.0, channelIndex=1):
         data = {"channelIndex": channelIndex, "deviceId": self.id, "dimLevel": dimLevel}
-        return await self._rest_call_async("device/control/setDimLevel", data)
+        return await self._rest_call("device/control/setDimLevel", data)
 
 
 class PluggableDimmer(Dimmer):
@@ -1938,27 +1938,27 @@ class WaterSensor(Device):
             self.waterlevelDetected,
         )
 
-    async def set_acoustic_alarm_signal_async(self, acousticAlarmSignal: AcousticAlarmSignal):
+    async def set_acoustic_alarm_signal(self, acousticAlarmSignal: AcousticAlarmSignal):
         data = {
             "channelIndex": 1,
             "deviceId": self.id,
             "acousticAlarmSignal": str(acousticAlarmSignal),
         }
-        return await self._rest_call_async(
+        return await self._rest_call(
             "device/configuration/setAcousticAlarmSignal", data
         )
 
-    async def set_acoustic_alarm_timing_async(self, acousticAlarmTiming: AcousticAlarmTiming):
+    async def set_acoustic_alarm_timing(self, acousticAlarmTiming: AcousticAlarmTiming):
         data = {
             "channelIndex": 1,
             "deviceId": self.id,
             "acousticAlarmTiming": str(acousticAlarmTiming),
         }
-        return await self._rest_call_async(
+        return await self._rest_call(
             "device/configuration/setAcousticAlarmTiming", data
         )
 
-    async def set_acoustic_water_alarm_trigger_async(
+    async def set_acoustic_water_alarm_trigger(
             self, acousticWaterAlarmTrigger: WaterAlarmTrigger
     ):
         data = {
@@ -1966,19 +1966,19 @@ class WaterSensor(Device):
             "deviceId": self.id,
             "acousticWaterAlarmTrigger": str(acousticWaterAlarmTrigger),
         }
-        return await self._rest_call_async("device/configuration/setAcousticWaterAlarmTrigger", data)
+        return await self._rest_call("device/configuration/setAcousticWaterAlarmTrigger", data)
 
-    async def set_inapp_water_alarm_trigger_async(self, inAppWaterAlarmTrigger: WaterAlarmTrigger):
+    async def set_inapp_water_alarm_trigger(self, inAppWaterAlarmTrigger: WaterAlarmTrigger):
         data = {
             "channelIndex": 1,
             "deviceId": self.id,
             "inAppWaterAlarmTrigger": str(inAppWaterAlarmTrigger),
         }
-        return await self._rest_call_async(
+        return await self._rest_call(
             "device/configuration/setInAppWaterAlarmTrigger", data
         )
 
-    async def set_siren_water_alarm_trigger_async(self, sirenWaterAlarmTrigger: WaterAlarmTrigger):
+    async def set_siren_water_alarm_trigger(self, sirenWaterAlarmTrigger: WaterAlarmTrigger):
         LOGGER.warning(
             "set_siren_water_alarm_trigger is currently not available in the HMIP App. It might not be available in the cloud yet"
         )
@@ -1987,7 +1987,7 @@ class WaterSensor(Device):
             "deviceId": self.id,
             "sirenWaterAlarmTrigger": str(sirenWaterAlarmTrigger),
         }
-        return await self._rest_call_async(
+        return await self._rest_call(
             "device/configuration/setSirenWaterAlarmTrigger", data
         )
 
@@ -2107,7 +2107,7 @@ class AccelerationSensor(Device):
                 "notificationSoundTypeLowToHigh", c, NotificationSoundType
             )
 
-    async def set_acceleration_sensor_mode_async(
+    async def set_acceleration_sensor_mode(
             self, mode: AccelerationSensorMode, channelIndex=1
     ):
         data = {
@@ -2115,11 +2115,11 @@ class AccelerationSensor(Device):
             "deviceId": self.id,
             "accelerationSensorMode": str(mode),
         }
-        return await self._rest_call_async(
+        return await self._rest_call(
             "device/configuration/setAccelerationSensorMode", data
         )
 
-    async def set_acceleration_sensor_neutral_position_async(
+    async def set_acceleration_sensor_neutral_position(
             self, neutralPosition: AccelerationSensorNeutralPosition, channelIndex=1
     ):
         data = {
@@ -2127,12 +2127,12 @@ class AccelerationSensor(Device):
             "deviceId": self.id,
             "accelerationSensorNeutralPosition": str(neutralPosition),
         }
-        return await self._rest_call_async(
+        return await self._rest_call(
             "device/configuration/setAccelerationSensorNeutralPosition",
             data,
         )
 
-    async def set_acceleration_sensor_sensitivity_async(
+    async def set_acceleration_sensor_sensitivity(
             self, sensitivity: AccelerationSensorSensitivity, channelIndex=1
     ):
         data = {
@@ -2140,21 +2140,21 @@ class AccelerationSensor(Device):
             "deviceId": self.id,
             "accelerationSensorSensitivity": str(sensitivity),
         }
-        return await self._rest_call_async(
+        return await self._rest_call(
             "device/configuration/setAccelerationSensorSensitivity", data
         )
 
-    async def set_acceleration_sensor_trigger_angle_async(self, angle: int, channelIndex=1):
+    async def set_acceleration_sensor_trigger_angle(self, angle: int, channelIndex=1):
         data = {
             "channelIndex": channelIndex,
             "deviceId": self.id,
             "accelerationSensorTriggerAngle": angle,
         }
-        return await self._rest_call_async(
+        return await self._rest_call(
             "device/configuration/setAccelerationSensorTriggerAngle", data
         )
 
-    async def set_acceleration_sensor_event_filter_period_async(
+    async def set_acceleration_sensor_event_filter_period(
             self, period: float, channelIndex=1
     ):
         data = {
@@ -2162,12 +2162,12 @@ class AccelerationSensor(Device):
             "deviceId": self.id,
             "accelerationSensorEventFilterPeriod": period,
         }
-        return await self._rest_call_async(
+        return await self._rest_call(
             "device/configuration/setAccelerationSensorEventFilterPeriod",
             data,
         )
 
-    async def set_notification_sound_type_async(
+    async def set_notification_sound_type(
             self, soundType: NotificationSoundType, isHighToLow: bool, channelIndex=1
     ):
         data = {
@@ -2176,7 +2176,7 @@ class AccelerationSensor(Device):
             "notificationSoundType": str(soundType),
             "isHighToLow": isHighToLow,
         }
-        return await self._rest_call_async(
+        return await self._rest_call(
             "device/configuration/setNotificationSoundType", data
         )
 
@@ -2200,9 +2200,9 @@ class DoorModule(Device):
             self.set_attr_from_dict("processing", c)
             self.set_attr_from_dict("ventilationPositionSupported", c)
 
-    async def send_door_command_async(self, doorCommand=DoorCommand.STOP):
+    async def send_door_command(self, doorCommand=DoorCommand.STOP):
         data = {"channelIndex": 1, "deviceId": self.id, "doorCommand": doorCommand}
-        return await self._rest_call_async("device/control/sendDoorCommand", data)
+        return await self._rest_call("device/control/sendDoorCommand", data)
 
 
 class GarageDoorModuleTormatic(DoorModule):
@@ -2244,10 +2244,10 @@ class WallMountedGarageDoorController(Device):
             self.set_attr_from_dict("impulseDuration", c)
             self.set_attr_from_dict("processing", c)
 
-    async def send_start_impulse_async(self, channelIndex=2):
+    async def send_start_impulse(self, channelIndex=2):
         """Toggle Wall mounted Garage Door Controller."""
         data = {"channelIndex": channelIndex, "deviceId": self.id}
-        return await self._rest_call_async("device/control/startImpulse", body=data)
+        return await self._rest_call("device/control/startImpulse", body=data)
 
 
 class TiltVibrationSensor(Device):
@@ -2280,7 +2280,7 @@ class TiltVibrationSensor(Device):
             self.set_attr_from_dict("accelerationSensorTriggerAngle", c)
             self.set_attr_from_dict("accelerationSensorTriggered", c)
 
-    async def set_acceleration_sensor_mode_async(
+    async def set_acceleration_sensor_mode(
             self, mode: AccelerationSensorMode, channelIndex=1
     ):
         data = {
@@ -2288,11 +2288,11 @@ class TiltVibrationSensor(Device):
             "deviceId": self.id,
             "accelerationSensorMode": str(mode),
         }
-        return await self._rest_call_async(
+        return await self._rest_call(
             "device/configuration/setAccelerationSensorMode", data
         )
 
-    async def set_acceleration_sensor_sensitivity_async(
+    async def set_acceleration_sensor_sensitivity(
             self, sensitivity: AccelerationSensorSensitivity, channelIndex=1
     ):
         data = {
@@ -2300,21 +2300,21 @@ class TiltVibrationSensor(Device):
             "deviceId": self.id,
             "accelerationSensorSensitivity": str(sensitivity),
         }
-        return await self._rest_call_async(
+        return await self._rest_call(
             "device/configuration/setAccelerationSensorSensitivity", data
         )
 
-    async def set_acceleration_sensor_trigger_angle_async(self, angle: int, channelIndex=1):
+    async def set_acceleration_sensor_trigger_angle(self, angle: int, channelIndex=1):
         data = {
             "channelIndex": channelIndex,
             "deviceId": self.id,
             "accelerationSensorTriggerAngle": angle,
         }
-        return await self._rest_call_async(
+        return await self._rest_call(
             "device/configuration/setAccelerationSensorTriggerAngle", data
         )
 
-    async def set_acceleration_sensor_event_filter_period_async(
+    async def set_acceleration_sensor_event_filter_period(
             self, period: float, channelIndex=1
     ):
         data = {
@@ -2322,7 +2322,7 @@ class TiltVibrationSensor(Device):
             "deviceId": self.id,
             "accelerationSensorEventFilterPeriod": period,
         }
-        return await self._rest_call_async(
+        return await self._rest_call(
             "device/configuration/setAccelerationSensorEventFilterPeriod",
             data,
         )
@@ -2395,7 +2395,7 @@ class DoorLockDrive(OperationLockableDevice):
             self.set_attr_from_dict("motorState", c, MotorState)
             self.door_lock_channel = c["index"]
 
-    async def set_lock_state_async(self, doorLockState: LockState, pin="", channelIndex=1):
+    async def set_lock_state(self, doorLockState: LockState, pin="", channelIndex=1):
         """sets the door lock state
 
         Args:
@@ -2414,7 +2414,7 @@ class DoorLockDrive(OperationLockableDevice):
             "authorizationPin": pin,
             "targetLockState": doorLockState,
         }
-        return await self._rest_call_async("device/control/setLockState", data)
+        return await self._rest_call("device/control/setLockState", data)
 
 
 class DoorLockSensor(Device):

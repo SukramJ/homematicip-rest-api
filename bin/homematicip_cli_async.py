@@ -6,7 +6,7 @@ import os
 from pprint import pprint
 import homematicip
 
-from homematicip.async_home import AsyncHome
+from homematicip.home import Home
 from homematicip.base.base_connection import HmipConnectionError
 
 
@@ -29,9 +29,9 @@ async def get_home(loop):
         print("Could not find configuration file. Script will exit")
         return
 
-    home = AsyncHome(loop)
+    home = Home(loop)
     home.set_auth_token(_config.auth_token)
-    await home.init_async(_config.access_point)
+    await home.init(_config.access_point)
     return home
 
 

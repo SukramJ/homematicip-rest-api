@@ -6,6 +6,5 @@ ignore:
  - "test_aio.py"
  - "setup.py"
  - "homematicip/_version.py"
- - "homematicip_cli_async.py"
+ - "homematicip_cli.py"
  - "homematicip/base/constants.py"
- - "homematicip/HomeMaticIPObject.py"

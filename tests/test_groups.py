@@ -48,7 +48,7 @@ def test_meta_group(fake_home: Home):
     )
 
 
-def test_heating_group(fake_home: Home):
+async def test_heating_group(fake_home: Home):
     g = fake_home.search_group_by_id("00000000-0000-0000-0000-000000000012")
     assert isinstance(g, HeatingGroup)
     for d in g.devices:
@@ -122,13 +122,13 @@ def test_heating_group(fake_home: Home):
     )
 
     with no_ssl_verification():
-        g.set_boost_duration(20)
-        g.set_boost(True)
-        g.set_active_profile(3)
-        g.set_point_temperature(10.5)
-        g.set_control_mode(ClimateControlMode.MANUAL)
+        await g.set_boost_duration(20)
+        await g.set_boost(True)
+        await g.set_active_profile(3)
+        await g.set_point_temperature(10.5)
+        await g.set_control_mode(ClimateControlMode.MANUAL)
 
-        fake_home.get_current_state()
+        await fake_home.get_current_state()
         g = fake_home.search_group_by_id("00000000-0000-0000-0000-000000000012")
         assert g.boostDuration == 20
         assert g.boostMode is True
@@ -136,24 +136,24 @@ def test_heating_group(fake_home: Home):
         assert g.setPointTemperature == 10.5
         assert g.controlMode == ClimateControlMode.MANUAL
 
-        fake_home.delete_group(g)
-        fake_home.get_current_state()
+        await fake_home.delete_group(g)
+        await fake_home.get_current_state()
         gNotFound = fake_home.search_group_by_id("00000000-0000-0000-0000-000000000012")
         assert gNotFound is None
 
-        result = g.set_boost_duration(20)
+        result = await g.set_boost_duration(20)
         assert not result.success
 
-        result = g.set_boost(True)
+        result = await g.set_boost(True)
         assert not result.success
 
-        result = g.set_active_profile(1)
+        result = await g.set_active_profile(1)
         assert not result.success
 
-        result = g.set_point_temperature(10.5)
+        result = await g.set_point_temperature(10.5)
         assert not result.success
 
-        result = g.set_control_mode(ClimateControlMode.MANUAL)
+        result = await g.set_control_mode(ClimateControlMode.MANUAL)
         assert not result.success
 
 
@@ -240,7 +240,7 @@ def test_security_zone(fake_home: Home):
     )
 
 
-def test_switching_group(fake_home: Home):
+async def test_switching_group(fake_home: Home):
     with no_ssl_verification():
         g = fake_home.search_group_by_id("00000000-0000-0000-0000-000000000018")
         assert isinstance(g, SwitchingGroup)
@@ -276,10 +276,10 @@ def test_switching_group(fake_home: Home):
             " processing(False) shutterLevel(None) slatsLevel(None)"
         )
 
-        g.turn_off()
-        g.set_label("NEW GROUP")
-        g.set_shutter_level(50)
-        fake_home.get_current_state()
+        await g.turn_off()
+        await g.set_label("NEW GROUP")
+        await g.set_shutter_level(50)
+        await fake_home.get_current_state()
         g = fake_home.search_group_by_id("00000000-0000-0000-0000-000000000018")
         assert g.on is False
         assert g.label == "NEW GROUP"
@@ -289,38 +289,38 @@ def test_switching_group(fake_home: Home):
             "SWITCHING NEW GROUP on(False) dimLevel(None) dutyCycle(False) lowBat(None)"
             " processing(False) shutterLevel(50) slatsLevel(None)"
         )
-        g.turn_on()
-        g.set_slats_level(1.0, 20)
+        await g.turn_on()
+        await g.set_slats_level(1.0, 20)
 
-        fake_home.get_current_state()
+        await fake_home.get_current_state()
         g = fake_home.search_group_by_id("00000000-0000-0000-0000-000000000018")
         assert g.on is True
         assert g.slatsLevel == 1.0
         assert g.shutterLevel == 20
-        g.set_shutter_stop()
+        await g.set_shutter_stop()
 
-        fake_home.delete_group(g)
-        fake_home.get_current_state()
+        await fake_home.delete_group(g)
+        await fake_home.get_current_state()
         gNotFound = fake_home.search_group_by_id("00000000-0000-0000-0000-000000000018")
         assert gNotFound is None
 
-        result = g.delete()
+        result = await g.delete()
         assert not result.success
 
-        result = g.set_label("LABEL")
+        result = await g.set_label("LABEL")
         assert not result.success
 
-        result = g.turn_off()
+        result = await g.turn_off()
         assert not result.success
 
-        result = g.set_shutter_level(50)
+        result = await g.set_shutter_level(50)
         assert not result.success
 
-        result = g.set_slats_level(1.0, 20)
+        result = await g.set_slats_level(1.0, 20)
         assert not result.success
 
 
-def test_shutter_profile(fake_home: Home):
+async def test_shutter_profile(fake_home: Home):
     with no_ssl_verification():
         g = fake_home.search_group_by_id("00000000-0000-0000-0000-000000000093")
         assert isinstance(g, ShutterProfile)
@@ -345,9 +345,9 @@ def test_shutter_profile(fake_home: Home):
             " shutterLevel(0.97) slatsLevel(None) profileMode(AUTOMATIC)"
         )
 
-        g.set_shutter_level(0.5)
-        g.set_profile_mode(ProfileMode.MANUAL)
-        fake_home.get_current_state()
+        await g.set_shutter_level(0.5)
+        await g.set_profile_mode(ProfileMode.MANUAL)
+        await fake_home.get_current_state()
         g = fake_home.search_group_by_id("00000000-0000-0000-0000-000000000093")
         assert g.shutterLevel == 0.5
         assert g.profileMode == ProfileMode.MANUAL
@@ -357,13 +357,13 @@ def test_shutter_profile(fake_home: Home):
             " shutterLevel(0.5) slatsLevel(None) profileMode(MANUAL)"
         )
 
-        g.set_slats_level(1.0, 0.4)
+        await g.set_slats_level(1.0, 0.4)
 
-        fake_home.get_current_state()
+        await fake_home.get_current_state()
         g = fake_home.search_group_by_id("00000000-0000-0000-0000-000000000093")
         assert g.slatsLevel == 1.0
         assert g.shutterLevel == 0.4
-        g.set_shutter_stop()
+        await g.set_shutter_stop()
 
 
 def test_environment_group(fake_home: Home):
@@ -406,7 +406,7 @@ def test_heating_cooling_demand_pump_group(fake_home: Home):
         )
 
 
-def test_switching_alarm_group(fake_home: Home):
+async def test_switching_alarm_group(fake_home: Home):
     with no_ssl_verification():
         g = fake_home.search_group_by_id("00000000-0000-0000-0000-000000000022")
         assert isinstance(g, AlarmSwitchingGroup)
@@ -419,14 +419,14 @@ def test_switching_alarm_group(fake_home: Home):
             "smokeDetectorAlarmType(IDLE_OFF) acousticFeedbackEnabled(True)"
         )
 
-        g.test_signal_acoustic(AcousticAlarmSignal.FREQUENCY_HIGHON_OFF)
-        g.test_signal_optical(OpticalAlarmSignal.BLINKING_ALTERNATELY_REPEATING)
+        await g.test_signal_acoustic(AcousticAlarmSignal.FREQUENCY_HIGHON_OFF)
+        await g.test_signal_optical(OpticalAlarmSignal.BLINKING_ALTERNATELY_REPEATING)
 
-        g.set_signal_acoustic(AcousticAlarmSignal.FREQUENCY_HIGHON_OFF)
-        g.set_signal_optical(OpticalAlarmSignal.BLINKING_ALTERNATELY_REPEATING)
-        g.set_on_time(5)
+        await g.set_signal_acoustic(AcousticAlarmSignal.FREQUENCY_HIGHON_OFF)
+        await g.set_signal_optical(OpticalAlarmSignal.BLINKING_ALTERNATELY_REPEATING)
+        await g.set_on_time(5)
 
-        fake_home.get_current_state()
+        await fake_home.get_current_state()
         g = fake_home.search_group_by_id("00000000-0000-0000-0000-000000000022")
 
         assert g.signalAcoustic == AcousticAlarmSignal.FREQUENCY_HIGHON_OFF
@@ -434,16 +434,16 @@ def test_switching_alarm_group(fake_home: Home):
         assert g.onTime == 5
 
         g.id = "00000000-0000-0000-0000-BADBADBADB22"
-        result = g.set_signal_acoustic(AcousticAlarmSignal.FREQUENCY_HIGHON_OFF)
+        result = await g.set_signal_acoustic(AcousticAlarmSignal.FREQUENCY_HIGHON_OFF)
         assert not result.success
 
-        result = g.set_signal_optical(OpticalAlarmSignal.BLINKING_ALTERNATELY_REPEATING)
+        result = await g.set_signal_optical(OpticalAlarmSignal.BLINKING_ALTERNATELY_REPEATING)
         assert not result.success
 
-        result = g.test_signal_acoustic(AcousticAlarmSignal.FREQUENCY_HIGHON_OFF)
+        result = await g.test_signal_acoustic(AcousticAlarmSignal.FREQUENCY_HIGHON_OFF)
         assert not result.success
 
-        result = g.test_signal_optical(
+        result = await g.test_signal_optical(
             OpticalAlarmSignal.BLINKING_ALTERNATELY_REPEATING
         )
         assert not result.success
@@ -477,7 +477,7 @@ def test_humidity_warning_rule_group(fake_home: Home):
         assert g.outdoorClimateSensor == d
 
 
-def test_extended_linked_shutter_group(fake_home: Home):
+async def test_extended_linked_shutter_group(fake_home: Home):
     with no_ssl_verification():
         g = fake_home.search_group_by_id("00000000-0000-0000-0000-000000000050")
 
@@ -500,16 +500,16 @@ def test_extended_linked_shutter_group(fake_home: Home):
             == "EXTENDED_LINKED_SHUTTER Rollos shutterLevel(1.0) slatsLevel(None)"
         )
 
-        g.set_slats_level(1.2, 10)
-        fake_home.get_current_state()
+        await g.set_slats_level(1.2, 10)
+        await fake_home.get_current_state()
         g = fake_home.search_group_by_id("00000000-0000-0000-0000-000000000050")
 
         assert g.slatsLevel == 1.2
         assert g.shutterLevel == 10
 
-        g.set_shutter_stop()
-        g.set_shutter_level(30)
-        fake_home.get_current_state()
+        await g.set_shutter_stop()
+        await g.set_shutter_level(30)
+        await fake_home.get_current_state()
         g = fake_home.search_group_by_id("00000000-0000-0000-0000-000000000050")
         assert g.shutterLevel == 30
 
@@ -529,13 +529,13 @@ def test_access_control_group(fake_home: Home):
         assert g.label == "AmHaustuere2"
 
 
-def test_hot_water(fake_home: Home):
+async def test_hot_water(fake_home: Home):
     with no_ssl_verification():
         g = fake_home.search_group_by_id("00000000-0000-0000-0000-000000000067")
         assert g.profileMode is None
 
-        g.set_profile_mode(ProfileMode.AUTOMATIC)
-        fake_home.get_current_state()
+        await g.set_profile_mode(ProfileMode.AUTOMATIC)
+        await fake_home.get_current_state()
         g = fake_home.search_group_by_id("00000000-0000-0000-0000-000000000067")
         assert g.profileMode == ProfileMode.AUTOMATIC
 

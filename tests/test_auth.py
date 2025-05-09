@@ -8,7 +8,7 @@ from homematicip.connection.rest_connection import RestConnection
 
 
 @pytest.mark.asyncio
-async def test_async_auth_challenge_no_pin(
+async def test_auth_challenge_no_pin(
         fake_connection_context_with_ssl
 ):
     devicename = "auth_test"
@@ -23,7 +23,7 @@ async def test_async_auth_challenge_no_pin(
     assert (await auth.is_request_acknowledged()) is False
     assert (await auth.is_request_acknowledged()) is False
 
-    await auth.connection.async_post("auth/simulateBlueButton")
+    await auth.connection.post("auth/simulateBlueButton")
 
     assert await auth.is_request_acknowledged() is True
 

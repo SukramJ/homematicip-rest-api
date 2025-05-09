@@ -61,9 +61,9 @@ class HomeMaticIPObject:
             custom_header (dict): the custom header to send. This will be merged with the default header
         """
         loop = asyncio.get_event_loop()
-        return loop.run_until_complete(self._connection.async_post(path, body, custom_header))
+        return loop.run_until_complete(self._connection.post(path, body, custom_header))
 
-    async def _rest_call_async(self, path, body=None, custom_header: dict = None):
+    async def _rest_call(self, path, body=None, custom_header: dict = None):
         """Run a rest call async
 
         Args:
@@ -71,7 +71,7 @@ class HomeMaticIPObject:
             body (dict): the body to send
             custom_header (dict): the custom header to send. This will be merged with the default header
         """
-        return await self._connection.async_post(path, body, custom_header)
+        return await self._connection.post(path, body, custom_header)
 
     def from_json(self, js) -> None:
         """this method will parse the homematicip object from a json object
